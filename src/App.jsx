@@ -18,6 +18,7 @@ import ClientPropertySubmission from '@/pages/ClientPropertySubmission';
 import AdminAnalytics from '@/pages/AdminAnalytics';
 import AdminWebsiteEditor from '@/pages/AdminWebsiteEditor';
 import PerformanceTest from '@/pages/PerformanceTest';
+import DatabaseTest from '@/components/DatabaseTest';
 
 import AdminProperties from '@/pages/AdminProperties';
 import AdminBlog from '@/pages/AdminBlog';
@@ -87,7 +88,6 @@ function App() {
             <PerformanceTest />
           </Layout>
         } />
-        
         {/* Admin Routes */}
         <Route path="/admin" element={<Navigate to="/admin/dashboard" replace />} />
         <Route path="/admin/login" element={<AdminLoginPage />} />
@@ -153,6 +153,14 @@ function App() {
           element={
             <AdminLayout>
               <AdminBlog />
+            </AdminLayout>
+          } 
+        />
+        <Route 
+          path="/admin/database-test" 
+          element={
+            <AdminLayout>
+              <DatabaseTest />
             </AdminLayout>
           } 
         />

@@ -1,11 +1,8 @@
 -- Caribbean Lux Realty Database Schema
 -- Run this in Supabase SQL Editor
 
--- Enable Row Level Security (RLS)
-ALTER TABLE auth.users ENABLE ROW LEVEL SECURITY;
-
 -- Properties Table
-CREATE TABLE properties (
+CREATE TABLE IF NOT EXISTS properties (
   id BIGSERIAL PRIMARY KEY,
   title TEXT NOT NULL,
   description TEXT,
@@ -27,7 +24,7 @@ CREATE TABLE properties (
 );
 
 -- Blog Posts Table
-CREATE TABLE blog_posts (
+CREATE TABLE IF NOT EXISTS blog_posts (
   id BIGSERIAL PRIMARY KEY,
   title TEXT NOT NULL,
   content TEXT,
@@ -40,7 +37,7 @@ CREATE TABLE blog_posts (
 );
 
 -- Client Submissions Table
-CREATE TABLE client_submissions (
+CREATE TABLE IF NOT EXISTS client_submissions (
   id BIGSERIAL PRIMARY KEY,
   name TEXT NOT NULL,
   email TEXT NOT NULL,
@@ -53,7 +50,7 @@ CREATE TABLE client_submissions (
 );
 
 -- Page Content Table (for CMS)
-CREATE TABLE page_content (
+CREATE TABLE IF NOT EXISTS page_content (
   id BIGSERIAL PRIMARY KEY,
   page_name TEXT UNIQUE NOT NULL,
   section_name TEXT NOT NULL,
@@ -61,19 +58,40 @@ CREATE TABLE page_content (
   updated_at TIMESTAMP WITH TIME ZONE DEFAULT NOW()
 );
 
--- Create indexes for better performance
-CREATE INDEX idx_properties_status ON properties(status);
-CREATE INDEX idx_properties_type ON properties(type);
-CREATE INDEX idx_properties_price ON properties(price);
-CREATE INDEX idx_blog_posts_published ON blog_posts(published);
-CREATE INDEX idx_client_submissions_status ON client_submissions(status);
-CREATE INDEX idx_page_content_page_section ON page_content(page_name, section_name);
+-- Create indexes for better performance (ignore if they exist)
+CREATE INDEX IF NOT EXISTS idx_properties_status ON properties(status);
+CREATE INDEX IF NOT EXISTS idx_properties_type ON properties(type);
+CREATE INDEX IF NOT EXISTS idx_properties_price ON properties(price);
+CREATE INDEX IF NOT EXISTS idx_blog_posts_published ON blog_posts(published);
+CREATE INDEX IF NOT EXISTS idx_client_submissions_status ON client_submissions(status);
+CREATE INDEX IF NOT EXISTS idx_page_content_page_section ON page_content(page_name, section_name);
 
 -- Enable Row Level Security on all tables
 ALTER TABLE properties ENABLE ROW LEVEL SECURITY;
 ALTER TABLE blog_posts ENABLE ROW LEVEL SECURITY;
 ALTER TABLE client_submissions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE page_content ENABLE ROW LEVEL SECURITY;
+
+-- Drop existing policies if they exist (to avoid conflicts)
+DROP POLICY IF EXISTS "Properties are viewable by everyone" ON properties;
+DROP POLICY IF EXISTS "Properties are insertable by authenticated users" ON properties;
+DROP POLICY IF EXISTS "Properties are updatable by authenticated users" ON properties;
+DROP POLICY IF EXISTS "Properties are deletable by authenticated users" ON properties;
+
+DROP POLICY IF EXISTS "Blog posts are viewable by everyone" ON blog_posts;
+DROP POLICY IF EXISTS "Blog posts are insertable by authenticated users" ON blog_posts;
+DROP POLICY IF EXISTS "Blog posts are updatable by authenticated users" ON blog_posts;
+DROP POLICY IF EXISTS "Blog posts are deletable by authenticated users" ON blog_posts;
+
+DROP POLICY IF EXISTS "Submissions are viewable by authenticated users" ON client_submissions;
+DROP POLICY IF EXISTS "Submissions are insertable by everyone" ON client_submissions;
+DROP POLICY IF EXISTS "Submissions are updatable by authenticated users" ON client_submissions;
+DROP POLICY IF EXISTS "Submissions are deletable by authenticated users" ON client_submissions;
+
+DROP POLICY IF EXISTS "Page content is viewable by everyone" ON page_content;
+DROP POLICY IF EXISTS "Page content is insertable by authenticated users" ON page_content;
+DROP POLICY IF EXISTS "Page content is updatable by authenticated users" ON page_content;
+DROP POLICY IF EXISTS "Page content is deletable by authenticated users" ON page_content;
 
 -- RLS Policies for Properties
 -- Anyone can read published properties
@@ -136,13 +154,6 @@ CREATE POLICY "Page content is updatable by authenticated users" ON page_content
 CREATE POLICY "Page content is deletable by authenticated users" ON page_content
   FOR DELETE USING (auth.role() = 'authenticated');
 
--- Insert some sample data
-INSERT INTO page_content (page_name, section_name, content) VALUES
-('home', 'hero_title', 'Discover Your Dream Property in the Caribbean'),
-('home', 'hero_subtitle', 'Luxury real estate opportunities in Roatán, Honduras'),
-('services', 'title', 'Our Services'),
-('services', 'subtitle', 'Comprehensive real estate solutions tailored to your needs');
-
 -- Create function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -153,8 +164,10 @@ END;
 $$ language 'plpgsql';
 
 -- Create triggers to automatically update updated_at
+DROP TRIGGER IF EXISTS update_properties_updated_at ON properties;
 CREATE TRIGGER update_properties_updated_at BEFORE UPDATE ON properties
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_blog_posts_updated_at ON blog_posts;
 CREATE TRIGGER update_blog_posts_updated_at BEFORE UPDATE ON blog_posts
     FOR EACH ROW EXECUTE FUNCTION update_updated_at_column(); 

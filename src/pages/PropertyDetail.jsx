@@ -3,20 +3,65 @@ import { useParams, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ChevronLeft, ChevronRight, MapPin, DollarSign, BedDouble, Bath, CarFront, Maximize, CalendarDays, Clock, Home, CheckCircle, Info, Mail, Heart, Phone, Share2, Download, Eye, Star, TrendingUp } from 'lucide-react';
-import { getPropertyById } from '@/lib/propertyUtils';
+import { getPropertyById } from '@/lib/supabaseUtils';
 
 const PropertyDetail = () => {
   const { propertyId } = useParams();
   const [property, setProperty] = useState(null);
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [isLightboxOpen, setIsLightboxOpen] = useState(false);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchedProperty = getPropertyById(propertyId);
-    setProperty(fetchedProperty);
-    setCurrentImageIndex(0); 
+    const fetchProperty = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const fetchedProperty = await getPropertyById(propertyId);
+        setProperty(fetchedProperty);
+        setCurrentImageIndex(0);
+      } catch (err) {
+        console.error('Error fetching property:', err);
+        setError('Failed to load property details. Please try again later.');
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchProperty();
   }, [propertyId]);
 
+  // Loading state
+  if (loading) {
+    return (
+      <div className="container mx-auto px-4 py-12 text-center">
+        <div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+          <h1 className="text-2xl font-bold text-foreground mb-4">Loading Property Details</h1>
+          <p className="text-muted-foreground">Fetching property information...</p>
+        </div>
+      </div>
+    );
+  }
+
+  // Error state
+  if (error) {
+    return (
+      <div className="container mx-auto px-4 py-12 text-center">
+        <div>
+          <div className="text-6xl mb-6">⚠️</div>
+          <h1 className="text-2xl font-bold text-destructive mb-4">Error Loading Property</h1>
+          <p className="text-muted-foreground mb-8">{error}</p>
+          <Button asChild>
+            <Link to="/properties"><ChevronLeft className="mr-2 h-4 w-4" /> Back to Properties</Link>
+          </Button>
+        </div>
+      </div>
+    );
+  }
+
+  // Property not found state
   if (!property) {
     return (
       <div className="container mx-auto px-4 py-12 text-center">

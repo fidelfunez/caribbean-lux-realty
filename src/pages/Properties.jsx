@@ -7,7 +7,7 @@ import { Slider } from '@/components/ui/slider';
 import { Label } from '@/components/ui/label';
 import { MapPin, DollarSign, Search, Filter, BedDouble, Bath, CarFront, ArrowRight, PlusSquare, Star, CheckCircle, Eye, Heart, TrendingUp, Grid3X3, List, SortAsc, SortDesc } from 'lucide-react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { getProperties } from '@/lib/propertyUtils';
+import { getProperties } from '@/lib/supabaseUtils';
 import { useAdmin } from '@/context/AdminContext.jsx';
 import { useToast } from '@/components/ui/use-toast';
 import { getContentField, getWebsiteContent } from '@/lib/contentUtils';
@@ -17,6 +17,8 @@ const Properties = () => {
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [searchParams, setSearchParams] = useSearchParams();
   const [content, setContent] = useState({});
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
   
   const [searchTerm, setSearchTerm] = useState('');
   const [propertyType, setPropertyType] = useState('all');
@@ -73,9 +75,27 @@ const Properties = () => {
   }, [searchParams, setSearchParams]);
 
   useEffect(() => {
-    const propertiesFromStorage = getProperties();
-    setAllProperties(propertiesFromStorage);
-  }, []);
+    const loadProperties = async () => {
+      try {
+        setLoading(true);
+        setError(null);
+        const propertiesFromDatabase = await getProperties();
+        setAllProperties(propertiesFromDatabase);
+      } catch (err) {
+        console.error('Error loading properties:', err);
+        setError('Failed to load properties. Please try again later.');
+        toast({
+          title: "Error",
+          description: "Failed to load properties. Please try again later.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    loadProperties();
+  }, [toast]);
 
   useEffect(() => {
     let currentProperties = [...allProperties];
@@ -336,8 +356,37 @@ const Properties = () => {
             </div>
           </div>
         )}
+
+        {/* Loading State */}
+        {loading && (
+          <div className="text-center py-16">
+            <div className="max-w-md mx-auto">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-primary mx-auto mb-4"></div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">Loading Properties</h3>
+              <p className="text-muted-foreground">Fetching the latest properties from our database...</p>
+            </div>
+          </div>
+        )}
+
+        {/* Error State */}
+        {error && !loading && (
+          <div className="text-center py-16">
+            <div className="max-w-md mx-auto">
+              <div className="text-6xl mb-6">⚠️</div>
+              <h3 className="text-xl font-semibold text-foreground mb-2">Error Loading Properties</h3>
+              <p className="text-muted-foreground mb-4">{error}</p>
+              <Button 
+                onClick={() => window.location.reload()} 
+                variant="outline"
+                className="border-primary text-primary hover:bg-primary hover:text-primary-foreground"
+              >
+                Try Again
+              </Button>
+            </div>
+          </div>
+        )}
         
-        {filteredProperties.length > 0 ? (
+        {!loading && !error && filteredProperties.length > 0 ? (
           <div className={`grid gap-6 lg:gap-8 ${
             viewMode === 'list' 
               ? 'grid-cols-1' 
@@ -429,7 +478,7 @@ const Properties = () => {
               );
             })}
           </div>
-        ) : (
+        ) : !loading && !error && (
           <div className="text-center py-16">
             <div className="max-w-md mx-auto">
               <div className="text-8xl mb-6">🏠</div>

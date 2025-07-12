@@ -116,7 +116,12 @@ const ClientPropertySubmission = () => {
       const processedData = { ...formData };
       numericFields.forEach(field => {
         if (processedData[field] !== '' && processedData[field] !== null && !isNaN(parseFloat(processedData[field]))) {
-          processedData[field] = parseFloat(processedData[field]);
+          // Convert to appropriate number type based on field
+          if (field === 'beds' || field === 'parking') {
+            processedData[field] = parseInt(processedData[field]); // Integer for beds and parking
+          } else {
+            processedData[field] = parseFloat(processedData[field]); // Float for price, baths, area
+          }
         } else if (field === 'price' || field === 'area') { 
             processedData[field] = 0;
         } else {

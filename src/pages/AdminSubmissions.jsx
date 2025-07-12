@@ -530,9 +530,9 @@ const AdminSubmissions = () => {
                     <div>
                       <h3 className="font-semibold text-lg mb-2">Contact Information</h3>
                       <div className="space-y-2 text-sm">
-                        <p><strong>Name:</strong> {selectedSubmission.contactName}</p>
-                        <p><strong>Email:</strong> {selectedSubmission.contactEmail}</p>
-                        <p><strong>Phone:</strong> {selectedSubmission.contactPhone}</p>
+                        <p><strong>Name:</strong> {selectedSubmission.contactname}</p>
+                        <p><strong>Email:</strong> {selectedSubmission.contactemail}</p>
+                        <p><strong>Phone:</strong> {selectedSubmission.contactphone}</p>
                       </div>
                     </div>
                   </div>

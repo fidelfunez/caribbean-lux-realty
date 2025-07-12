@@ -5,6 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { getClientSubmissions, updateClientSubmission, deleteClientSubmission } from '@/lib/supabaseUtils';
+import { getDisplayValue } from '@/lib/fieldMappers';
 import { 
   CheckCircle, 
   XCircle, 
@@ -92,8 +93,8 @@ const AdminSubmissions = () => {
       filtered = filtered.filter(sub => 
         sub.title?.toLowerCase().includes(term) ||
         sub.location?.toLowerCase().includes(term) ||
-        sub.contactname?.toLowerCase().includes(term) ||
-        sub.contactemail?.toLowerCase().includes(term)
+        sub.contactName?.toLowerCase().includes(term) ||
+        sub.contactEmail?.toLowerCase().includes(term)
       );
     }
 
@@ -104,6 +105,7 @@ const AdminSubmissions = () => {
     setIsProcessing(true);
     
     try {
+      console.log('Updating submission:', submissionId, 'to status:', newStatus);
       await updateClientSubmission(submissionId, { 
         status: newStatus, 
         reviewed_at: new Date().toISOString() 
@@ -313,6 +315,8 @@ const AdminSubmissions = () => {
           </Card>
         ) : (
           filteredSubmissions.map((submission) => {
+            // Debug log for each submission
+            console.log('Submission object:', submission);
             const StatusIcon = statusIcons[submission.status];
             return (
               <Card key={submission.id} className="hover:shadow-lg transition-shadow">
@@ -336,11 +340,11 @@ const AdminSubmissions = () => {
                           <div className="flex items-center gap-4 text-sm text-muted-foreground mb-2">
                             <span className="flex items-center gap-1">
                               <MapPin className="h-4 w-4" />
-                              {submission.location}
+                              {getDisplayValue(submission, 'location', 'Location not specified')}
                             </span>
                             <span className="flex items-center gap-1">
                               <DollarSign className="h-4 w-4" />
-                              ${submission.price?.toLocaleString()}
+                              {getDisplayValue(submission, 'price', 'Price not specified')}
                             </span>
                           </div>
                         </div>
@@ -358,25 +362,25 @@ const AdminSubmissions = () => {
                         {submission.beds && (
                           <span className="flex items-center gap-1">
                             <BedDouble className="h-4 w-4 text-primary" />
-                            {submission.beds} beds
+                            {getDisplayValue(submission, 'beds')} beds
                           </span>
                         )}
                         {submission.baths && (
                           <span className="flex items-center gap-1">
                             <Bath className="h-4 w-4 text-primary" />
-                            {submission.baths} baths
+                            {getDisplayValue(submission, 'baths')} baths
                           </span>
                         )}
                         {submission.parking && (
                           <span className="flex items-center gap-1">
                             <CarFront className="h-4 w-4 text-primary" />
-                            {submission.parking} parking
+                            {getDisplayValue(submission, 'parking')} parking
                           </span>
                         )}
                         {submission.area && (
                           <span className="flex items-center gap-1">
                             <Maximize className="h-4 w-4 text-primary" />
-                            {submission.area} sq ft
+                            {getDisplayValue(submission, 'area')} sq ft
                           </span>
                         )}
                       </div>
@@ -385,22 +389,22 @@ const AdminSubmissions = () => {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <span className="flex items-center gap-1">
                           <Mail className="h-4 w-4 text-primary" />
-                          {submission.contactemail}
+                          {getDisplayValue(submission, 'contactEmail', getDisplayValue(submission, 'email', 'Email not provided'))}
                         </span>
                         <span className="flex items-center gap-1">
                           <Phone className="h-4 w-4 text-primary" />
-                          {submission.contactphone}
+                          {getDisplayValue(submission, 'contactPhone', getDisplayValue(submission, 'phone', 'Phone not provided'))}
                         </span>
                         <span className="flex items-center gap-1">
                           <Users className="h-4 w-4 text-primary" />
-                          {submission.contactname}
+                          {getDisplayValue(submission, 'contactName', getDisplayValue(submission, 'name', 'Contact name not provided'))}
                         </span>
                       </div>
 
                       {/* Submission Date */}
                       <div className="flex items-center gap-1 text-sm text-muted-foreground">
                         <CalendarDays className="h-4 w-4" />
-                        Submitted: {formatDate(submission.submissionDate)}
+                        Submitted: {formatDate(submission.createdAt || submission.created_at)}
                       </div>
 
                                              {/* Actions */}
@@ -530,9 +534,9 @@ const AdminSubmissions = () => {
                     <div>
                       <h3 className="font-semibold text-lg mb-2">Contact Information</h3>
                       <div className="space-y-2 text-sm">
-                        <p><strong>Name:</strong> {selectedSubmission.contactname}</p>
-                        <p><strong>Email:</strong> {selectedSubmission.contactemail}</p>
-                        <p><strong>Phone:</strong> {selectedSubmission.contactphone}</p>
+                        <p><strong>Name:</strong> {getDisplayValue(selectedSubmission, 'contactName', getDisplayValue(selectedSubmission, 'name', 'Not provided'))}</p>
+                        <p><strong>Email:</strong> {getDisplayValue(selectedSubmission, 'contactEmail', getDisplayValue(selectedSubmission, 'email', 'Not provided'))}</p>
+                        <p><strong>Phone:</strong> {getDisplayValue(selectedSubmission, 'contactPhone', getDisplayValue(selectedSubmission, 'phone', 'Not provided'))}</p>
                       </div>
                     </div>
                   </div>

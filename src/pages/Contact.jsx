@@ -129,8 +129,8 @@ const Contact = () => {
                 <div className="flex items-start gap-4 p-4 bg-white/50 rounded-lg">
                   <div className="p-2 bg-primary/20 rounded-lg">
                     <Phone className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
+              </div>
+              <div>
                     <h4 className="font-semibold text-foreground mb-1">Phone</h4>
                     <p className="text-muted-foreground">{getContent('contact', 'contactInfo', 'phone')}</p>
                     <p className="text-xs text-muted-foreground mt-1">Call us anytime</p>
@@ -140,8 +140,8 @@ const Contact = () => {
                 <div className="flex items-start gap-4 p-4 bg-white/50 rounded-lg">
                   <div className="p-2 bg-primary/20 rounded-lg">
                     <Mail className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
+              </div>
+              <div>
                     <h4 className="font-semibold text-foreground mb-1">Email</h4>
                     <p className="text-muted-foreground">{getContent('contact', 'contactInfo', 'email')}</p>
                     <p className="text-xs text-muted-foreground mt-1">We respond within 24 hours</p>
@@ -151,8 +151,8 @@ const Contact = () => {
                 <div className="flex items-start gap-4 p-4 bg-white/50 rounded-lg">
                   <div className="p-2 bg-primary/20 rounded-lg">
                     <MapPin className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
+              </div>
+              <div>
                     <h4 className="font-semibold text-foreground mb-1">Office</h4>
                     <p className="text-muted-foreground">{getContent('contact', 'contactInfo', 'address')}</p>
                     <p className="text-xs text-muted-foreground mt-1">Visit us by appointment</p>
@@ -162,8 +162,8 @@ const Contact = () => {
                 <div className="flex items-start gap-4 p-4 bg-white/50 rounded-lg">
                   <div className="p-2 bg-primary/20 rounded-lg">
                     <Clock className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
+              </div>
+              <div>
                     <h4 className="font-semibold text-foreground mb-1">Office Hours</h4>
                     <p className="text-muted-foreground text-sm">{getContent('contact', 'contactInfo', 'officeHours')}</p>
                     <p className="text-xs text-muted-foreground mt-1">{getContent('contact', 'contactInfo', 'emergencyContact')}</p>
@@ -195,8 +195,8 @@ const Contact = () => {
                       required 
                       className="mt-2 bg-background/70 focus:bg-background text-base" 
                     />
-                  </div>
-                  <div>
+                </div>
+                <div>
                     <Label htmlFor="email" className="text-foreground text-sm font-medium">Email Address</Label>
                     <Input 
                       type="email" 
@@ -208,9 +208,9 @@ const Contact = () => {
                       required 
                       className="mt-2 bg-background/70 focus:bg-background text-base" 
                     />
-                  </div>
                 </div>
-                
+              </div>
+
                 <div>
                   <Label htmlFor="subject" className="text-foreground text-sm font-medium">Subject</Label>
                   <Input 
@@ -223,8 +223,8 @@ const Contact = () => {
                     required 
                     className="mt-2 bg-background/70 focus:bg-background text-base" 
                   />
-                </div>
-                
+              </div>
+
                 <div>
                   <Label htmlFor="message" className="text-foreground text-sm font-medium">Message</Label>
                   <Textarea 
@@ -237,8 +237,8 @@ const Contact = () => {
                     required 
                     className="mt-2 bg-background/70 focus:bg-background text-base" 
                   />
-                </div>
-                
+              </div>
+
                 <div className="pt-4">
                   <Button 
                     type="submit" 
@@ -256,40 +256,40 @@ const Contact = () => {
                   </Button>
                 </div>
               </form>
+                </div>
+              </div>
             </div>
-          </div>
-        </div>
 
         {/* WhatsApp Section - Moved Below */}
         <div className="mt-8 lg:mt-12">
           <div className="bg-gradient-to-r from-green-500 to-teal-500 p-6 lg:p-8 rounded-xl text-white relative overflow-hidden shadow-lg max-w-2xl mx-auto">
-            <div className="absolute inset-0 bg-black/10"></div>
+              <div className="absolute inset-0 bg-black/10"></div>
             <div className="relative z-10 text-center">
               <div className="flex items-center justify-center gap-3 mb-4">
-                <MessageSquare className="w-8 h-8" />
+                  <MessageSquare className="w-8 h-8" />
                 <h3 className="text-xl lg:text-2xl font-semibold">WhatsApp Chat</h3>
-              </div>
+                </div>
               <p className="mb-6 opacity-90 text-base">Get instant responses to your questions via WhatsApp.</p>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6 text-sm opacity-75">
                 <div className="flex items-center justify-center gap-2">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Instant responses</span>
-                </div>
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Instant responses</span>
+                  </div>
                 <div className="flex items-center justify-center gap-2">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Photo sharing</span>
-                </div>
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Photo sharing</span>
+                  </div>
                 <div className="flex items-center justify-center gap-2">
-                  <CheckCircle className="w-4 h-4" />
-                  <span>Voice messages</span>
+                    <CheckCircle className="w-4 h-4" />
+                    <span>Voice messages</span>
+                  </div>
                 </div>
-              </div>
               <Button asChild variant="outline" className="border-white text-white hover:bg-white hover:text-green-600 shadow-md text-base py-3 px-8 bg-white/20 backdrop-blur-sm font-semibold">
-                <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
+                  <a href={whatsappUrl} target="_blank" rel="noopener noreferrer">
                   <MessageSquare className="w-5 h-5 mr-2" />
-                  Chat on WhatsApp
-                </a>
-              </Button>
+                    Chat on WhatsApp
+                  </a>
+                </Button>
             </div>
           </div>
         </div>

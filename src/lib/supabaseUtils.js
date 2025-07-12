@@ -1,4 +1,5 @@
 import { createClient } from '@supabase/supabase-js';
+import { dbToFrontend, frontendToDb, dbArrayToFrontend, frontendArrayToDb, validateAndConvertTypes } from './fieldMappers';
 
 // Initialize Supabase client with error handling
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
@@ -37,7 +38,8 @@ export const getProperties = async () => {
       return [];
     }
 
-    return data || [];
+    // Convert database format to frontend format
+    return dbArrayToFrontend(data || [], 'properties');
   } catch (error) {
     console.error('Error in getProperties:', error);
     return [];
@@ -63,7 +65,8 @@ export const getPropertyById = async (id) => {
       return null;
     }
 
-    return data;
+    // Convert database format to frontend format
+    return dbToFrontend(data, 'properties');
   } catch (error) {
     console.error('Error in getPropertyById:', error);
     return null;
@@ -77,11 +80,15 @@ export const addProperty = async (newPropertyData) => {
       throw new Error('Supabase not configured. Please check your environment variables.');
     }
 
+    // Validate and convert data types, then convert to database format
+    const validatedData = validateAndConvertTypes(newPropertyData, 'properties');
+    const dbData = frontendToDb(validatedData, 'properties');
+
     console.log('Attempting to add property to Supabase...');
     // Use admin client for insert operations
     const { data, error } = await supabaseAdmin
       .from('properties')
-      .insert([newPropertyData])
+      .insert([dbData])
       .select()
       .single();
 
@@ -91,7 +98,8 @@ export const addProperty = async (newPropertyData) => {
     }
 
     console.log('Property added successfully:', data);
-    return data;
+    // Convert back to frontend format
+    return dbToFrontend(data, 'properties');
   } catch (error) {
     console.error('Error in addProperty:', error);
     throw error;
@@ -105,10 +113,14 @@ export const updateProperty = async (propertyId, updatedData) => {
       throw new Error('Supabase not configured. Please check your environment variables.');
     }
 
+    // Validate and convert data types, then convert to database format
+    const validatedData = validateAndConvertTypes(updatedData, 'properties');
+    const dbData = frontendToDb(validatedData, 'properties');
+
     // Use admin client for update operations
     const { data, error } = await supabaseAdmin
       .from('properties')
-      .update(updatedData)
+      .update(dbData)
       .eq('id', propertyId)
       .select()
       .single();
@@ -118,7 +130,8 @@ export const updateProperty = async (propertyId, updatedData) => {
       throw error;
     }
 
-    return data;
+    // Convert back to frontend format
+    return dbToFrontend(data, 'properties');
   } catch (error) {
     console.error('Error in updateProperty:', error);
     throw error;
@@ -173,7 +186,8 @@ export const getBlogPosts = async () => {
     }
 
     console.log('Supabase response:', { data, error });
-    return data || [];
+    // Convert database format to frontend format
+    return dbArrayToFrontend(data || [], 'blog_posts');
   } catch (error) {
     console.error('Error in getBlogPosts:', error);
     return [];
@@ -199,7 +213,8 @@ export const getBlogPostBySlug = async (slug) => {
       return null;
     }
 
-    return data;
+    // Convert database format to frontend format
+    return dbToFrontend(data, 'blog_posts');
   } catch (error) {
     console.error('Error in getBlogPostBySlug:', error);
     return null;
@@ -213,10 +228,14 @@ export const addBlogPost = async (newBlogData) => {
       throw new Error('Supabase not configured. Please check your environment variables.');
     }
 
+    // Validate and convert data types, then convert to database format
+    const validatedData = validateAndConvertTypes(newBlogData, 'blog_posts');
+    const dbData = frontendToDb(validatedData, 'blog_posts');
+
     // Use admin client for insert operations
     const { data, error } = await supabaseAdmin
       .from('blog_posts')
-      .insert([newBlogData])
+      .insert([dbData])
       .select()
       .single();
 
@@ -225,7 +244,8 @@ export const addBlogPost = async (newBlogData) => {
       throw error;
     }
 
-    return data;
+    // Convert back to frontend format
+    return dbToFrontend(data, 'blog_posts');
   } catch (error) {
     console.error('Error in addBlogPost:', error);
     throw error;
@@ -239,10 +259,14 @@ export const updateBlogPost = async (postId, updatedData) => {
       throw new Error('Supabase not configured. Please check your environment variables.');
     }
 
+    // Validate and convert data types, then convert to database format
+    const validatedData = validateAndConvertTypes(updatedData, 'blog_posts');
+    const dbData = frontendToDb(validatedData, 'blog_posts');
+
     // Use admin client for update operations
     const { data, error } = await supabaseAdmin
       .from('blog_posts')
-      .update(updatedData)
+      .update(dbData)
       .eq('id', postId)
       .select()
       .single();
@@ -252,7 +276,8 @@ export const updateBlogPost = async (postId, updatedData) => {
       throw error;
     }
 
-    return data;
+    // Convert back to frontend format
+    return dbToFrontend(data, 'blog_posts');
   } catch (error) {
     console.error('Error in updateBlogPost:', error);
     throw error;
@@ -303,7 +328,8 @@ export const getClientSubmissions = async () => {
       return [];
     }
 
-    return data || [];
+    // Convert database format to frontend format
+    return dbArrayToFrontend(data || [], 'client_submissions');
   } catch (error) {
     console.error('Error in getClientSubmissions:', error);
     return [];
@@ -317,10 +343,14 @@ export const addClientSubmission = async (submissionData) => {
       throw new Error('Supabase not configured. Please check your environment variables.');
     }
 
+    // Validate and convert data types, then convert to database format
+    const validatedData = validateAndConvertTypes(submissionData, 'client_submissions');
+    const dbData = frontendToDb(validatedData, 'client_submissions');
+
     // Use admin client for insert operations
     const { data, error } = await supabaseAdmin
       .from('client_submissions')
-      .insert([submissionData])
+      .insert([dbData])
       .select()
       .single();
 
@@ -329,7 +359,8 @@ export const addClientSubmission = async (submissionData) => {
       throw error;
     }
 
-    return data;
+    // Convert back to frontend format
+    return dbToFrontend(data, 'client_submissions');
   } catch (error) {
     console.error('Error in addClientSubmission:', error);
     throw error;
@@ -343,10 +374,14 @@ export const updateClientSubmission = async (submissionId, updatedData) => {
       throw new Error('Supabase not configured. Please check your environment variables.');
     }
 
+    // Validate and convert data types, then convert to database format
+    const validatedData = validateAndConvertTypes(updatedData, 'client_submissions');
+    const dbData = frontendToDb(validatedData, 'client_submissions');
+
     // Use admin client for update operations
     const { data, error } = await supabaseAdmin
       .from('client_submissions')
-      .update(updatedData)
+      .update(dbData)
       .eq('id', submissionId)
       .select()
       .single();
@@ -356,7 +391,8 @@ export const updateClientSubmission = async (submissionId, updatedData) => {
       throw error;
     }
 
-    return data;
+    // Convert back to frontend format
+    return dbToFrontend(data, 'client_submissions');
   } catch (error) {
     console.error('Error in updateClientSubmission:', error);
     throw error;

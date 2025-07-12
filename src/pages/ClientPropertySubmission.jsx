@@ -9,6 +9,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useToast } from '@/components/ui/use-toast';
 import { addClientSubmission } from '@/lib/supabaseUtils';
+import { validateAndConvertTypes } from '@/lib/fieldMappers';
 import { DollarSign, Type, MapPin as MapPinIcon, BedDouble, Bath, CarFront, Maximize, Info, Image as ImageIcon, ListChecks, CalendarDays, Clock, PlusCircle, Trash2, UploadCloud, Send } from 'lucide-react';
 
 const fadeIn = {
@@ -146,15 +147,12 @@ const ClientPropertySubmission = () => {
 
       // Save to Supabase for admin review
       const submissionData = {
-        // Original required fields
-        name: processedData.contactName,
-        email: processedData.contactEmail,
-        phone: processedData.contactPhone,
-        property_type: processedData.type,
-        budget: processedData.price,
-        message: `Property: ${processedData.title}\nLocation: ${processedData.location}\nDescription: ${processedData.description}\nBedrooms: ${processedData.beds}\nBathrooms: ${processedData.baths}\nParking: ${processedData.parking}\nArea: ${processedData.area}`,
+        // Contact information
+        contactName: processedData.contactName,
+        contactEmail: processedData.contactEmail,
+        contactPhone: processedData.contactPhone,
         
-        // New detailed fields
+        // Property details
         title: processedData.title,
         location: processedData.location,
         description: processedData.description,
@@ -164,14 +162,20 @@ const ClientPropertySubmission = () => {
         baths: processedData.baths,
         parking: processedData.parking,
         area: processedData.area,
-        contactname: processedData.contactName,
-        contactemail: processedData.contactEmail,
-        contactphone: processedData.contactPhone,
+        
+        // Legacy fields for backward compatibility
+        name: processedData.contactName,
+        email: processedData.contactEmail,
+        phone: processedData.contactPhone,
+        property_type: processedData.type,
+        budget: processedData.price,
+        message: `Property: ${processedData.title}\nLocation: ${processedData.location}\nDescription: ${processedData.description}\nBedrooms: ${processedData.beds}\nBathrooms: ${processedData.baths}\nParking: ${processedData.parking}\nArea: ${processedData.area}`,
+        
+        // Media and features
         image: processedData.image,
         images: processedData.images,
         features: processedData.features,
-        status: 'pending',
-        created_at: new Date().toISOString()
+        status: 'pending'
       };
       
       // Debug logging

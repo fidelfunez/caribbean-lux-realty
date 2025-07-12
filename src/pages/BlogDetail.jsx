@@ -210,10 +210,10 @@ const BlogDetail = () => {
           </header>
 
           {/* Featured Image */}
-          {post.image && (
+          {post.featured_image && (
             <motion.div className="mb-8" variants={fadeIn}>
               <img 
-                src={post.image} 
+                src={post.featured_image} 
                 alt={post.title}
                 className="w-full h-64 md:h-96 object-cover rounded-lg shadow-lg"
               />
@@ -284,9 +284,9 @@ const BlogDetail = () => {
               {relatedPosts.map((relatedPost) => (
                 <Card key={relatedPost.id} className="hover:shadow-lg transition-shadow">
                   <CardContent className="p-6">
-                    {relatedPost.image && (
+                    {relatedPost.featured_image && (
                       <img 
-                        src={relatedPost.image} 
+                        src={relatedPost.featured_image} 
                         alt={relatedPost.title}
                         className="w-full h-32 object-cover rounded mb-4"
                       />

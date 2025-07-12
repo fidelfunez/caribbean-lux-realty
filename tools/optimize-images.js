@@ -1,18 +1,27 @@
-const fs = require('fs');
-const path = require('path');
-const { execSync } = require('child_process');
+import fs from 'fs';
+import path from 'path';
+import { execSync } from 'child_process';
+import { fileURLToPath } from 'url';
+
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
 
 // Check if ImageMagick is installed
 function checkImageMagick() {
   try {
-    execSync('convert --version', { stdio: 'ignore' });
+    execSync('magick --version', { stdio: 'ignore' });
     return true;
   } catch (error) {
-    console.log('ImageMagick not found. Please install it first:');
-    console.log('macOS: brew install imagemagick');
-    console.log('Ubuntu: sudo apt-get install imagemagick');
-    console.log('Windows: Download from https://imagemagick.org/');
-    return false;
+    try {
+      execSync('convert --version', { stdio: 'ignore' });
+      return true;
+    } catch (error2) {
+      console.log('ImageMagick not found. Please install it first:');
+      console.log('macOS: brew install imagemagick');
+      console.log('Ubuntu: sudo apt-get install imagemagick');
+      console.log('Windows: Download from https://imagemagick.org/');
+      return false;
+    }
   }
 }
 
@@ -22,8 +31,7 @@ function optimizeImages() {
   const files = fs.readdirSync(photosDir);
   
   const imageFiles = files.filter(file => 
-    /\.(jpg|jpeg|png)$/i.test(file) && 
-    !file.includes('optimized') &&
+    /\.(jpg|jpeg|png)$/i.test(file) &&
     !file.includes('.DS_Store')
   );
   
@@ -34,8 +42,15 @@ function optimizeImages() {
     const outputPath = path.join(photosDir, file.replace(/\.(jpg|jpeg|png)$/i, '.webp'));
     
     try {
-      // Convert to WebP with quality 80
-      execSync(`convert "${inputPath}" -quality 80 "${outputPath}"`);
+      // Use magick command for ImageMagick 7, fallback to convert for older versions
+      let command;
+      try {
+        command = `magick "${inputPath}" -quality 80 "${outputPath}"`;
+        execSync(command);
+      } catch (magickError) {
+        command = `convert "${inputPath}" -quality 80 "${outputPath}"`;
+        execSync(command);
+      }
       
       // Get file sizes
       const originalSize = fs.statSync(inputPath).size;
@@ -50,16 +65,14 @@ function optimizeImages() {
 }
 
 // Main execution
-if (require.main === module) {
-  if (!checkImageMagick()) {
-    process.exit(1);
-  }
-  
-  console.log('🚀 Starting image optimization...');
-  optimizeImages();
-  console.log('✅ Image optimization complete!');
-  console.log('\n📝 Next steps:');
-  console.log('1. Update image references in your code to use .webp files');
-  console.log('2. Consider using <picture> elements for fallback support');
-  console.log('3. Test the performance improvement');
-} 
+console.log('🚀 Starting image optimization...');
+if (!checkImageMagick()) {
+  process.exit(1);
+}
+
+optimizeImages();
+console.log('✅ Image optimization complete!');
+console.log('\n📝 Next steps:');
+console.log('1. Update image references in your code to use .webp files');
+console.log('2. Consider using <picture> elements for fallback support');
+console.log('3. Test the performance improvement'); 

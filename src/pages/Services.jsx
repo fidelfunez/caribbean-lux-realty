@@ -137,6 +137,7 @@ const Services = () => {
         <div className="absolute inset-0">
           <OptimizedImage 
             src="/Photos/turtle-ocean-optimized.jpg" 
+            webpSrc="/Photos/turtle-ocean-optimized.webp"
             alt="Turtle in Caribbean ocean" 
             className="w-full h-full object-cover"
             loading="eager"

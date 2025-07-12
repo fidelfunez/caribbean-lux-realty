@@ -71,6 +71,7 @@ const Home = () => {
             alt="Tropical Caribbean beach background" 
             className="w-full h-full object-cover" 
             src="/Photos/hero-banner-optimized.jpg" 
+            webpSrc="/Photos/hero-banner-optimized.webp"
             loading="eager" 
             fetchpriority="high"
           />

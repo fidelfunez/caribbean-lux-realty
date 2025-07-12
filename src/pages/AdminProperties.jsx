@@ -1,39 +1,27 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Badge } from '@/components/ui/badge';
-import { getProperties, deleteProperty } from '@/lib/propertyUtils';
-import { useToast } from '@/components/ui/use-toast';
+import { getProperties, deleteProperty } from '@/lib/supabaseUtils';
 import { 
-  Home, 
   PlusSquare, 
   Edit, 
   Trash2, 
   Search, 
-  Filter, 
-  Eye, 
-  MoreHorizontal,
-  DollarSign,
+  Filter,
+  Home,
+  Building2,
+  Car,
+  TreePalm,
   MapPin,
-  BedDouble,
-  Bath,
-  CarFront,
-  Maximize,
+  DollarSign,
   Calendar,
-  Users,
-  Star,
-  TrendingUp,
-  AlertCircle,
-  CheckCircle,
-  XCircle,
-  RefreshCw,
-  Download,
-  Upload
+  Eye,
+  MoreHorizontal
 } from 'lucide-react';
+import { useToast } from '@/components/ui/use-toast';
 
 const fadeIn = {
   hidden: { opacity: 0, y: 20 },
@@ -42,13 +30,13 @@ const fadeIn = {
 
 const AdminProperties = () => {
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [properties, setProperties] = useState([]);
   const [filteredProperties, setFilteredProperties] = useState([]);
   const [searchTerm, setSearchTerm] = useState('');
-  const [propertyType, setPropertyType] = useState('all');
-  const [statusFilter, setStatusFilter] = useState('all');
-  const [selectedProperties, setSelectedProperties] = useState([]);
-  const [isProcessing, setIsProcessing] = useState(false);
+  const [typeFilter, setTypeFilter] = useState('all');
+  const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState(null);
 
   useEffect(() => {
     loadProperties();
@@ -56,11 +44,23 @@ const AdminProperties = () => {
 
   useEffect(() => {
     filterProperties();
-  }, [properties, searchTerm, propertyType, statusFilter]);
+  }, [properties, searchTerm, typeFilter]);
 
-  const loadProperties = () => {
-    const allProperties = getProperties();
-    setProperties(allProperties);
+  const loadProperties = async () => {
+    try {
+      setLoading(true);
+      const data = await getProperties();
+      setProperties(data);
+    } catch (error) {
+      console.error('Error loading properties:', error);
+      toast({
+        title: "Error Loading Properties",
+        description: "Failed to load properties. Please refresh the page.",
+        variant: "destructive",
+      });
+    } finally {
+      setLoading(false);
+    }
   };
 
   const filterProperties = () => {
@@ -68,47 +68,49 @@ const AdminProperties = () => {
 
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(p => 
-        p.title?.toLowerCase().includes(term) ||
-        p.location?.toLowerCase().includes(term) ||
-        p.description?.toLowerCase().includes(term)
+      filtered = filtered.filter(property => 
+        property.title?.toLowerCase().includes(term) ||
+        property.location?.toLowerCase().includes(term) ||
+        property.description?.toLowerCase().includes(term)
       );
     }
 
-    if (propertyType !== 'all') {
-      filtered = filtered.filter(p => p.type === propertyType);
-    }
-
-    if (statusFilter !== 'all') {
-      filtered = filtered.filter(p => {
-        if (statusFilter === 'featured') return p.featured;
-        if (statusFilter === 'recent') {
-          const createdAt = new Date(p.createdAt || p.id);
-          const weekAgo = new Date();
-          weekAgo.setDate(weekAgo.getDate() - 7);
-          return createdAt >= weekAgo;
-        }
-        return true;
-      });
+    if (typeFilter !== 'all') {
+      filtered = filtered.filter(property => property.type === typeFilter);
     }
 
     setFilteredProperties(filtered);
   };
 
   const handleDeleteProperty = async (propertyId) => {
-    if (!window.confirm('Are you sure you want to delete this property? This action cannot be undone.')) {
+    const propertyToDelete = properties.find(p => p.id === propertyId);
+    if (!propertyToDelete) return;
+
+    const hasImages = propertyToDelete.image || (propertyToDelete.images && propertyToDelete.images.length > 0);
+    const imageSize = hasImages ? Math.round((propertyToDelete.image?.length || 0) * 0.75 / 1024) : 0;
+
+    const confirmMessage = hasImages 
+      ? `Are you sure you want to delete "${propertyToDelete.title}"? This will also remove the associated images (~${imageSize}KB). This action cannot be undone.`
+      : `Are you sure you want to delete "${propertyToDelete.title}"? This action cannot be undone.`;
+
+    if (!window.confirm(confirmMessage)) {
       return;
     }
 
-    setIsProcessing(true);
     try {
-      deleteProperty(propertyId);
-      loadProperties();
-      toast({
-        title: "Property Deleted! 🗑️",
-        description: "The property has been successfully deleted.",
-        variant: "default",
-      });
+      setDeletingId(propertyId);
+      const success = await deleteProperty(propertyId);
+      
+      if (success) {
+        setProperties(properties.filter(p => p.id !== propertyId));
+        toast({
+          title: "Property Deleted! 🗑️",
+          description: `${propertyToDelete.title} has been successfully removed from the database.`,
+          variant: "default",
+        });
+      } else {
+        throw new Error('Delete operation failed');
+      }
     } catch (error) {
       console.error('Error deleting property:', error);
       toast({
@@ -117,419 +119,292 @@ const AdminProperties = () => {
         variant: "destructive",
       });
     } finally {
-      setIsProcessing(false);
+      setDeletingId(null);
     }
   };
 
-  const handleBulkDelete = async () => {
-    if (selectedProperties.length === 0) {
-      toast({
-        title: "No Properties Selected ❌",
-        description: "Please select properties to delete.",
-        variant: "destructive",
-      });
-      return;
-    }
-
-    if (!window.confirm(`Are you sure you want to delete ${selectedProperties.length} properties? This action cannot be undone.`)) {
-      return;
-    }
-
-    setIsProcessing(true);
-    try {
-      selectedProperties.forEach(propertyId => {
-        deleteProperty(propertyId);
-      });
-      setSelectedProperties([]);
-      loadProperties();
-      toast({
-        title: "Properties Deleted! 🗑️",
-        description: `${selectedProperties.length} properties have been successfully deleted.`,
-        variant: "default",
-      });
-    } catch (error) {
-      console.error('Error deleting properties:', error);
-      toast({
-        title: "Delete Failed ❌",
-        description: "Failed to delete properties. Please try again.",
-        variant: "destructive",
-      });
-    } finally {
-      setIsProcessing(false);
-    }
+  const formatPrice = (price) => {
+    if (!price) return 'Price on request';
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(price);
   };
 
-  const handleSelectProperty = (propertyId) => {
-    setSelectedProperties(prev => 
-      prev.includes(propertyId) 
-        ? prev.filter(id => id !== propertyId)
-        : [...prev, propertyId]
-    );
-  };
-
-  const handleSelectAll = () => {
-    if (selectedProperties.length === filteredProperties.length) {
-      setSelectedProperties([]);
-    } else {
-      setSelectedProperties(filteredProperties.map(p => p.id));
-    }
-  };
-
-  const exportProperties = () => {
-    try {
-      const data = {
-        properties: filteredProperties,
-        exportDate: new Date().toISOString(),
-        filters: { searchTerm, propertyType, statusFilter }
-      };
-      
-      const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-      const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = `properties-export-${new Date().toISOString().split('T')[0]}.json`;
-      a.click();
-      URL.revokeObjectURL(url);
-      
-      toast({
-        title: "Properties Exported! 📁",
-        description: "Property data has been successfully exported.",
-        variant: "default",
-      });
-    } catch (error) {
-      console.error('Error exporting properties:', error);
-      toast({
-        title: "Export Failed ❌",
-        description: "Failed to export properties. Please try again.",
-        variant: "destructive",
-      });
-    }
-  };
-
-  const formatCurrency = (amount) => {
-    if (!amount) return 'N/A';
-    if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `$${(amount / 1000).toFixed(0)}K`;
-    }
-    return `$${amount.toLocaleString()}`;
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   const getPropertyTypeIcon = (type) => {
-    const icons = {
-      'Villa': <Home className="w-4 h-4" />,
-      'House': <Home className="w-4 h-4" />,
-      'Condo': <Home className="w-4 h-4" />,
-      'Apartment': <Home className="w-4 h-4" />,
-      'Land': <Home className="w-4 h-4" />,
-      'Commercial': <Home className="w-4 h-4" />,
-      'Estate': <Home className="w-4 h-4" />
-    };
-    return icons[type] || <Home className="w-4 h-4" />;
+    switch (type?.toLowerCase()) {
+      case 'house':
+      case 'villa':
+        return <Home className="w-4 h-4" />;
+      case 'apartment':
+      case 'condo':
+        return <Building2 className="w-4 h-4" />;
+      case 'commercial':
+        return <Building2 className="w-4 h-4" />;
+      case 'land':
+        return <TreePalm className="w-4 h-4" />;
+      default:
+        return <Home className="w-4 h-4" />;
+    }
   };
 
-  const uniquePropertyTypes = ['all', ...new Set(properties.map(p => p.type).filter(Boolean))];
+  const propertyTypes = ['House', 'Villa', 'Apartment', 'Condo', 'Commercial', 'Land'];
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
-      className="container mx-auto px-4 py-8"
+      className="space-y-8"
       initial="hidden"
       animate="visible"
       variants={fadeIn}
     >
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-primary mb-2">Manage Properties</h1>
-            <p className="text-muted-foreground">Admin control center for all property listings</p>
+      <motion.section 
+        className="text-center py-16 md:py-20 bg-gradient-to-b from-primary/10 via-transparent to-transparent rounded-xl"
+        variants={fadeIn}
+      >
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center mb-4">
+            <Home className="w-12 h-12 text-primary mr-4" />
+            <motion.h1 variants={fadeIn} className="text-4xl sm:text-5xl font-extrabold text-primary">Manage Properties</motion.h1>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={loadProperties}>
-              <RefreshCw className="w-4 h-4 mr-2" />
-              Refresh
-            </Button>
-            <Button onClick={exportProperties}>
-              <Download className="w-4 h-4 mr-2" />
-              Export
-            </Button>
-            <Button asChild>
+          <motion.p variants={fadeIn} className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
+            View, edit, and manage all your property listings. Keep your portfolio organized and up-to-date.
+          </motion.p>
+          <motion.div variants={fadeIn}>
+            <Button asChild className="bg-primary hover:bg-primary/90 text-lg py-3 px-8">
               <Link to="/admin/properties/add">
-                <PlusSquare className="w-4 h-4 mr-2" />
-                Add Property
+                <PlusSquare className="w-5 h-5 mr-2" />
+                Add New Property
               </Link>
             </Button>
-          </div>
+          </motion.div>
         </div>
-      </div>
+      </motion.section>
 
-      {/* Stats */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-        <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-90">Total Properties</p>
-                <p className="text-3xl font-bold">{properties.length}</p>
-              </div>
-              <Home className="w-8 h-8 opacity-80" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-90">Total Value</p>
-                <p className="text-3xl font-bold">{formatCurrency(properties.reduce((sum, p) => sum + (p.price || 0), 0))}</p>
-              </div>
-              <DollarSign className="w-8 h-8 opacity-80" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-90">Property Types</p>
-                <p className="text-3xl font-bold">{uniquePropertyTypes.length - 1}</p>
-              </div>
-              <TrendingUp className="w-8 h-8 opacity-80" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-90">Selected</p>
-                <p className="text-3xl font-bold">{selectedProperties.length}</p>
-              </div>
-              <CheckCircle className="w-8 h-8 opacity-80" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters */}
-      <Card className="mb-8">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Search Properties</label>
+      {/* Filters and Search */}
+      <motion.section 
+        className="container mx-auto px-4"
+        variants={fadeIn}
+      >
+        <div className="bg-white rounded-lg shadow-sm border p-6 mb-8">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Search Properties</label>
               <div className="relative">
-                <Input 
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                <Input
+                  type="text"
                   placeholder="Search by title, location, or description..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                   className="pl-10"
                 />
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               </div>
             </div>
             
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Property Type</label>
-              <Select value={propertyType} onValueChange={setPropertyType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  {uniquePropertyTypes.map(type => (
-                    <SelectItem key={type} value={type}>{type === 'all' ? 'All Types' : type}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-2">Property Type</label>
+              <select
+                value={typeFilter}
+                onChange={(e) => setTypeFilter(e.target.value)}
+                className="w-full h-10 rounded-md border border-input bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-primary"
+              >
+                <option value="all">All Types</option>
+                {propertyTypes.map(type => (
+                  <option key={type} value={type}>{type}</option>
+                ))}
+              </select>
             </div>
             
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Status</label>
-              <Select value={statusFilter} onValueChange={setStatusFilter}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Properties</SelectItem>
-                  <SelectItem value="featured">Featured</SelectItem>
-                  <SelectItem value="recent">Recent (Last 7 days)</SelectItem>
-                </SelectContent>
-              </Select>
+            <div className="flex items-end">
+              <Button 
+                variant="outline" 
+                onClick={() => {
+                  setSearchTerm('');
+                  setTypeFilter('all');
+                }}
+                className="w-full"
+              >
+                <Filter className="w-4 h-4 mr-2" />
+                Clear Filters
+              </Button>
             </div>
           </div>
-        </CardContent>
-      </Card>
+        </div>
+      </motion.section>
 
-      {/* Bulk Actions */}
-      {selectedProperties.length > 0 && (
-        <Card className="mb-6 border-orange-200 bg-orange-50">
-          <CardContent className="p-4">
-            <div className="flex items-center justify-between">
-              <div className="flex items-center gap-2">
-                <AlertCircle className="w-5 h-5 text-orange-600" />
-                <span className="font-medium text-orange-800">
-                  {selectedProperties.length} property{selectedProperties.length !== 1 ? 'ies' : 'y'} selected
-                </span>
-              </div>
-              <div className="flex gap-2">
-                <Button 
-                  variant="outline" 
-                  onClick={() => setSelectedProperties([])}
-                  className="text-orange-600 border-orange-200"
-                >
-                  Clear Selection
-                </Button>
-                <Button 
-                  variant="destructive" 
-                  onClick={handleBulkDelete}
-                  disabled={isProcessing}
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Delete Selected
-                </Button>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
-      )}
-
-      {/* Properties List */}
-      <div className="space-y-4">
+      {/* Properties Grid */}
+      <motion.section 
+        className="container mx-auto px-4"
+        variants={fadeIn}
+      >
         {filteredProperties.length === 0 ? (
-          <Card>
-            <CardContent className="p-8 text-center">
-              <AlertCircle className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-              <h3 className="text-lg font-semibold mb-2">No Properties Found</h3>
-              <p className="text-muted-foreground mb-4">
-                {searchTerm || propertyType !== 'all' || statusFilter !== 'all'
-                  ? 'Try adjusting your search or filter criteria.'
-                  : 'No properties have been added yet.'
+          <Card className="text-center py-12">
+            <CardContent>
+              <Home className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">
+                {properties.length === 0 ? 'No Properties Found' : 'No Properties Match Your Filters'}
+              </h3>
+              <p className="text-gray-500 mb-6">
+                {properties.length === 0 
+                  ? 'Get started by adding your first property listing.'
+                  : 'Try adjusting your search terms or filters.'
                 }
               </p>
-              <Button asChild>
-                <Link to="/admin/properties/add">Add Your First Property</Link>
-              </Button>
+              {properties.length === 0 && (
+                <Button asChild>
+                  <Link to="/admin/properties/add">
+                    <PlusSquare className="w-4 h-4 mr-2" />
+                    Add Your First Property
+                  </Link>
+                </Button>
+              )}
             </CardContent>
           </Card>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {filteredProperties.map((property) => (
-              <Card key={property.id} className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex items-center gap-2">
-                      <input
-                        type="checkbox"
-                        checked={selectedProperties.includes(property.id)}
-                        onChange={() => handleSelectProperty(property.id)}
-                        className="rounded border-gray-300"
-                      />
-                      <div className="flex items-center gap-2">
-                        {getPropertyTypeIcon(property.type)}
-                        <Badge variant="secondary">{property.type}</Badge>
-                      </div>
-                    </div>
-                    <div className="flex gap-2">
-                      <Button size="sm" variant="outline" asChild>
+              <motion.div
+                key={property.id}
+                variants={fadeIn}
+                className="group"
+              >
+                <Card className="h-full hover:shadow-lg transition-all duration-300 overflow-hidden">
+                  <div className="relative h-48 overflow-hidden">
+                    <img
+                      src={property.image || 'https://images.unsplash.com/photo-1582407947304-fd86f028f716?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cmVhbCUyMGVzdGF0ZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60'}
+                      alt={property.title}
+                      className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                      loading="lazy"
+                    />
+                    <div className="absolute top-2 right-2 flex space-x-1">
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        asChild
+                        className="bg-white/90 hover:bg-white text-gray-700"
+                      >
                         <Link to={`/properties/${property.id}`}>
-                          <Eye className="w-4 h-4" />
+                          <Eye className="w-3 h-3" />
                         </Link>
                       </Button>
-                      <Button size="sm" variant="outline" asChild>
+                      <Button
+                        size="sm"
+                        variant="secondary"
+                        asChild
+                        className="bg-white/90 hover:bg-white text-gray-700"
+                      >
                         <Link to={`/admin/properties/edit/${property.id}`}>
-                          <Edit className="w-4 h-4" />
+                          <Edit className="w-3 h-3" />
                         </Link>
                       </Button>
-                      <Button 
-                        size="sm" 
+                      <Button
+                        size="sm"
                         variant="destructive"
                         onClick={() => handleDeleteProperty(property.id)}
-                        disabled={isProcessing}
+                        disabled={deletingId === property.id}
+                        className="bg-red-500/90 hover:bg-red-500 text-white"
                       >
-                        <Trash2 className="w-4 h-4" />
+                        {deletingId === property.id ? (
+                          <div className="animate-spin rounded-full h-3 w-3 border-t-2 border-b-2 border-white"></div>
+                        ) : (
+                          <Trash2 className="w-3 h-3" />
+                        )}
                       </Button>
                     </div>
                   </div>
-
-                  <div className="space-y-3">
-                    <div>
-                      <h3 className="font-semibold text-lg text-primary">{property.title}</h3>
-                      <p className="text-sm text-muted-foreground flex items-center gap-1">
-                        <MapPin className="w-4 h-4" />
-                        {property.location}
+                  
+                  <CardContent className="p-4">
+                    <div className="flex items-start justify-between mb-2">
+                      <div className="flex items-center space-x-2">
+                        {getPropertyTypeIcon(property.type)}
+                        <span className="text-xs text-gray-500 uppercase tracking-wide">
+                          {property.type || 'Property'}
+                        </span>
+                      </div>
+                      <span className="text-xs text-gray-500">
+                        {formatDate(property.created_at)}
+                      </span>
+                    </div>
+                    
+                    <h3 className="font-semibold text-lg mb-2 line-clamp-2">
+                      {property.title}
+                    </h3>
+                    
+                    <div className="flex items-center text-sm text-gray-600 mb-2">
+                      <MapPin className="w-3 h-3 mr-1" />
+                      <span className="line-clamp-1">{property.location}</span>
+                    </div>
+                    
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="font-bold text-lg text-primary">
+                        {formatPrice(property.price)}
+                      </span>
+                      {property.beds && property.baths && (
+                        <div className="text-sm text-gray-600">
+                          {property.beds} bed • {property.baths} bath
+                        </div>
+                      )}
+                    </div>
+                    
+                    {property.description && (
+                      <p className="text-sm text-gray-600 line-clamp-2 mb-3">
+                        {property.description}
                       </p>
+                    )}
+                    
+                    <div className="flex justify-between items-center">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        asChild
+                        className="flex-1 mr-2"
+                      >
+                        <Link to={`/admin/properties/edit/${property.id}`}>
+                          <Edit className="w-3 h-3 mr-1" />
+                          Edit
+                        </Link>
+                      </Button>
+                      
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        asChild
+                        className="flex-1"
+                      >
+                        <Link to={`/properties/${property.id}`}>
+                          <Eye className="w-3 h-3 mr-1" />
+                          View
+                        </Link>
+                      </Button>
                     </div>
-
-                    <p className="text-sm text-muted-foreground line-clamp-2">
-                      {property.description}
-                    </p>
-
-                    <div className="flex flex-wrap gap-4 text-sm text-muted-foreground">
-                      {property.beds && (
-                        <span className="flex items-center gap-1">
-                          <BedDouble className="w-4 h-4" />
-                          {property.beds} beds
-                        </span>
-                      )}
-                      {property.baths && (
-                        <span className="flex items-center gap-1">
-                          <Bath className="w-4 h-4" />
-                          {property.baths} baths
-                        </span>
-                      )}
-                      {property.parking && (
-                        <span className="flex items-center gap-1">
-                          <CarFront className="w-4 h-4" />
-                          {property.parking} parking
-                        </span>
-                      )}
-                      {property.area && (
-                        <span className="flex items-center gap-1">
-                          <Maximize className="w-4 h-4" />
-                          {property.area} sq ft
-                        </span>
-                      )}
-                    </div>
-
-                    <div className="flex items-center justify-between pt-3 border-t">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg font-bold text-primary">
-                          {formatCurrency(property.price)}
-                        </span>
-                        {property.featured && (
-                          <Badge className="bg-yellow-100 text-yellow-800">
-                            <Star className="w-3 h-3 mr-1" />
-                            Featured
-                          </Badge>
-                        )}
-                      </div>
-                      <div className="text-xs text-muted-foreground">
-                        Added {new Date(property.createdAt || property.id).toLocaleDateString()}
-                      </div>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </motion.div>
             ))}
           </div>
         )}
-      </div>
-
-      {/* Select All Button */}
-      {filteredProperties.length > 0 && (
-        <div className="mt-6 flex justify-center">
-          <Button 
-            variant="outline" 
-            onClick={handleSelectAll}
-            className="flex items-center gap-2"
-          >
-            {selectedProperties.length === filteredProperties.length ? 'Deselect All' : 'Select All'}
-          </Button>
-        </div>
-      )}
+      </motion.section>
     </motion.div>
   );
 };

@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { useAdmin } from '@/context/AdminContext.jsx';
-import { getProperties } from '@/lib/propertyUtils';
+import { getProperties, getClientSubmissions } from '@/lib/supabaseUtils';
 import { 
   Home, 
   PlusSquare, 
@@ -42,6 +42,7 @@ const AdminDashboard = () => {
   const { toast } = useToast();
   const [properties, setProperties] = useState([]);
   const [submissions, setSubmissions] = useState([]);
+  const [loading, setLoading] = useState(true);
   const [stats, setStats] = useState({
     totalProperties: 0,
     totalValue: 0,
@@ -54,40 +55,58 @@ const AdminDashboard = () => {
   });
 
   useEffect(() => {
-    const allProperties = getProperties();
-    const allSubmissions = JSON.parse(localStorage.getItem('caribbeanLuxRealty_submissions') || '[]');
-    
-    setProperties(allProperties);
-    setSubmissions(allSubmissions);
-    
-    // Calculate stats
-    const totalValue = allProperties.reduce((sum, p) => sum + (p.price || 0), 0);
-    const averagePrice = allProperties.length > 0 ? totalValue / allProperties.length : 0;
-    const propertyTypes = allProperties.reduce((acc, p) => {
-      if (p.type) {
-        acc[p.type] = (acc[p.type] || 0) + 1;
+    const loadData = async () => {
+      try {
+        setLoading(true);
+        const [allProperties, allSubmissions] = await Promise.all([
+          getProperties(),
+          getClientSubmissions()
+        ]);
+        
+        setProperties(allProperties);
+        setSubmissions(allSubmissions);
+        
+        // Calculate stats
+        const totalValue = allProperties.reduce((sum, p) => sum + (p.price || 0), 0);
+        const averagePrice = allProperties.length > 0 ? totalValue / allProperties.length : 0;
+        const propertyTypes = allProperties.reduce((acc, p) => {
+          if (p.type) {
+            acc[p.type] = (acc[p.type] || 0) + 1;
+          }
+          return acc;
+        }, {});
+
+        // Calculate submission stats
+        const submissionStats = allSubmissions.reduce((acc, sub) => {
+          acc.total++;
+          acc[sub.status] = (acc[sub.status] || 0) + 1;
+          return acc;
+        }, { total: 0, pending: 0, approved: 0, rejected: 0 });
+
+        setStats({
+          totalProperties: allProperties.length,
+          totalValue,
+          averagePrice,
+          propertyTypes,
+          totalSubmissions: submissionStats.total,
+          pendingSubmissions: submissionStats.pending,
+          approvedSubmissions: submissionStats.approved,
+          rejectedSubmissions: submissionStats.rejected
+        });
+      } catch (error) {
+        console.error('Error loading dashboard data:', error);
+        toast({
+          title: "Error Loading Data",
+          description: "Failed to load dashboard statistics. Please refresh the page.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
       }
-      return acc;
-    }, {});
+    };
 
-    // Calculate submission stats
-    const submissionStats = allSubmissions.reduce((acc, sub) => {
-      acc.total++;
-      acc[sub.status] = (acc[sub.status] || 0) + 1;
-      return acc;
-    }, { total: 0, pending: 0, approved: 0, rejected: 0 });
-
-    setStats({
-      totalProperties: allProperties.length,
-      totalValue,
-      averagePrice,
-      propertyTypes,
-      totalSubmissions: submissionStats.total,
-      pendingSubmissions: submissionStats.pending,
-      approvedSubmissions: submissionStats.approved,
-      rejectedSubmissions: submissionStats.rejected
-    });
-  }, []);
+    loadData();
+  }, [toast]);
 
   const handleLogout = () => {
     logout();
@@ -137,6 +156,14 @@ const AdminDashboard = () => {
   ];
 
   const recentProperties = properties.slice(0, 5);
+
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <motion.div 

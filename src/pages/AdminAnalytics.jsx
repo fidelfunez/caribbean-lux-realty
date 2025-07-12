@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { getProperties } from '@/lib/propertyUtils';
+import { getProperties } from '@/lib/supabaseUtils';
 import { 
   BarChart3, 
   TrendingUp, 
@@ -35,6 +35,7 @@ const AdminAnalytics = () => {
   const [properties, setProperties] = useState([]);
   const [timeRange, setTimeRange] = useState('all');
   const [propertyType, setPropertyType] = useState('all');
+  const [loading, setLoading] = useState(true);
   const [analytics, setAnalytics] = useState({
     totalProperties: 0,
     totalValue: 0,
@@ -51,85 +52,104 @@ const AdminAnalytics = () => {
     loadAnalytics();
   }, [timeRange, propertyType]);
 
-  const loadAnalytics = () => {
-    const allProperties = getProperties();
-    let filteredProperties = [...allProperties];
+  const loadAnalytics = async () => {
+    try {
+      setLoading(true);
+      const data = await getProperties();
+      setProperties(data);
+      
+      // Calculate analytics
+      const filteredProperties = filterProperties(data);
+      calculateAnalytics(filteredProperties);
+    } catch (error) {
+      console.error('Error loading analytics:', error);
+    } finally {
+      setLoading(false);
+    }
+  };
 
-    // Apply filters
+  const filterProperties = (data) => {
+    let filtered = [...data];
+
+    // Filter by time range
     if (timeRange !== 'all') {
       const now = new Date();
-      const monthsAgo = new Date();
-      monthsAgo.setMonth(now.getMonth() - parseInt(timeRange));
+      const cutoffDate = new Date();
       
-      filteredProperties = filteredProperties.filter(property => {
-        const createdAt = new Date(property.createdAt || property.id);
-        return createdAt >= monthsAgo;
+      switch (timeRange) {
+        case 'week':
+          cutoffDate.setDate(now.getDate() - 7);
+          break;
+        case 'month':
+          cutoffDate.setMonth(now.getMonth() - 1);
+          break;
+        case 'quarter':
+          cutoffDate.setMonth(now.getMonth() - 3);
+          break;
+        case 'year':
+          cutoffDate.setFullYear(now.getFullYear() - 1);
+          break;
+      }
+      
+      filtered = filtered.filter(property => {
+        const propertyDate = new Date(property.created_at);
+        return propertyDate >= cutoffDate;
       });
     }
 
+    // Filter by property type
     if (propertyType !== 'all') {
-      filteredProperties = filteredProperties.filter(property => property.type === propertyType);
+      filtered = filtered.filter(property => property.type === propertyType);
     }
 
-    setProperties(filteredProperties);
-    calculateAnalytics(filteredProperties);
+    return filtered;
   };
 
-  const calculateAnalytics = (props) => {
-    const totalValue = props.reduce((sum, p) => sum + (p.price || 0), 0);
-    const averagePrice = props.length > 0 ? totalValue / props.length : 0;
-    const prices = props.map(p => p.price || 0).filter(p => p > 0);
+  const calculateAnalytics = (filteredProperties) => {
+    const totalProperties = filteredProperties.length;
+    const totalValue = filteredProperties.reduce((sum, p) => sum + (p.price || 0), 0);
+    const averagePrice = totalProperties > 0 ? totalValue / totalProperties : 0;
+    
+    const prices = filteredProperties.map(p => p.price).filter(p => p > 0);
     const priceRange = {
       min: prices.length > 0 ? Math.min(...prices) : 0,
       max: prices.length > 0 ? Math.max(...prices) : 0
     };
 
-    // Property types distribution
-    const propertyTypes = props.reduce((acc, p) => {
+    const propertyTypes = filteredProperties.reduce((acc, p) => {
       if (p.type) {
         acc[p.type] = (acc[p.type] || 0) + 1;
       }
       return acc;
     }, {});
 
-    // Location statistics
-    const locationStats = props.reduce((acc, p) => {
+    const locationStats = filteredProperties.reduce((acc, p) => {
       if (p.location) {
         acc[p.location] = (acc[p.location] || 0) + 1;
       }
       return acc;
     }, {});
 
-    // Monthly trends (last 6 months)
+    // Calculate monthly trends
     const monthlyTrends = {};
-    const now = new Date();
-    for (let i = 5; i >= 0; i--) {
-      const month = new Date(now.getFullYear(), now.getMonth() - i, 1);
-      const monthKey = month.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      monthlyTrends[monthKey] = 0;
-    }
-
-    props.forEach(property => {
-      const createdAt = new Date(property.createdAt || property.id);
-      const monthKey = createdAt.toLocaleDateString('en-US', { month: 'short', year: 'numeric' });
-      if (monthlyTrends[monthKey] !== undefined) {
-        monthlyTrends[monthKey]++;
-      }
+    filteredProperties.forEach(property => {
+      const date = new Date(property.created_at);
+      const monthYear = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}`;
+      monthlyTrends[monthYear] = (monthlyTrends[monthYear] || 0) + 1;
     });
 
     // Top performers (by price)
-    const topPerformers = props
-      .filter(p => p.price && p.price > 0)
-      .sort((a, b) => b.price - a.price)
+    const topPerformers = [...filteredProperties]
+      .sort((a, b) => (b.price || 0) - (a.price || 0))
       .slice(0, 5);
 
-    // Recent activity (last 10 properties)
-    const recentActivity = props
-      .sort((a, b) => new Date(b.createdAt || b.id) - new Date(a.createdAt || a.id))
+    // Recent activity
+    const recentActivity = [...filteredProperties]
+      .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       .slice(0, 10);
 
     setAnalytics({
-      totalProperties: props.length,
+      totalProperties,
       totalValue,
       averagePrice,
       priceRange,
@@ -142,310 +162,331 @@ const AdminAnalytics = () => {
   };
 
   const formatCurrency = (amount) => {
-    if (amount >= 1000000) {
-      return `$${(amount / 1000000).toFixed(1)}M`;
-    } else if (amount >= 1000) {
-      return `$${(amount / 1000).toFixed(0)}K`;
-    }
-    return `$${amount.toLocaleString()}`;
+    if (!amount) return '$0';
+    return new Intl.NumberFormat('en-US', {
+      style: 'currency',
+      currency: 'USD',
+      minimumFractionDigits: 0,
+      maximumFractionDigits: 0,
+    }).format(amount);
+  };
+
+  const formatDate = (dateString) => {
+    if (!dateString) return 'N/A';
+    const date = new Date(dateString);
+    return date.toLocaleDateString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric'
+    });
   };
 
   const getPropertyTypeIcon = (type) => {
-    const icons = {
-      'Villa': <Home className="w-4 h-4" />,
-      'House': <Building2 className="w-4 h-4" />,
-      'Condo': <Building2 className="w-4 h-4" />,
-      'Apartment': <Building2 className="w-4 h-4" />,
-      'Land': <TreePalm className="w-4 h-4" />,
-      'Commercial': <Building2 className="w-4 h-4" />,
-      'Estate': <Home className="w-4 h-4" />
-    };
-    return icons[type] || <Home className="w-4 h-4" />;
+    switch (type?.toLowerCase()) {
+      case 'house':
+      case 'villa':
+        return <Home className="w-4 h-4" />;
+      case 'apartment':
+      case 'condo':
+        return <Building2 className="w-4 h-4" />;
+      case 'commercial':
+        return <Building2 className="w-4 h-4" />;
+      case 'land':
+        return <TreePalm className="w-4 h-4" />;
+      default:
+        return <Home className="w-4 h-4" />;
+    }
   };
 
-  const exportAnalytics = () => {
-    const data = {
-      analytics,
-      filters: { timeRange, propertyType },
-      exportDate: new Date().toISOString()
-    };
-    
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `property-analytics-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-  };
+  if (loading) {
+    return (
+      <div className="flex justify-center items-center h-64">
+        <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
+      </div>
+    );
+  }
 
   return (
     <motion.div 
-      className="container mx-auto px-4 py-8"
+      className="space-y-8"
       initial="hidden"
       animate="visible"
       variants={fadeIn}
     >
       {/* Header */}
-      <div className="mb-8">
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-          <div>
-            <h1 className="text-3xl font-bold text-primary mb-2">Property Analytics</h1>
-            <p className="text-muted-foreground">Comprehensive insights into your property portfolio</p>
+      <motion.section 
+        className="text-center py-16 md:py-20 bg-gradient-to-b from-primary/10 via-transparent to-transparent rounded-xl"
+        variants={fadeIn}
+      >
+        <div className="container mx-auto px-4">
+          <div className="flex items-center justify-center mb-4">
+            <BarChart3 className="w-12 h-12 text-primary mr-4" />
+            <motion.h1 variants={fadeIn} className="text-4xl sm:text-5xl font-extrabold text-primary">Analytics Dashboard</motion.h1>
           </div>
-          <div className="flex gap-2">
-            <Button variant="outline" onClick={loadAnalytics}>
+          <motion.p variants={fadeIn} className="text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto mb-6">
+            Comprehensive insights into your property portfolio performance and market trends.
+          </motion.p>
+        </div>
+      </motion.section>
+
+      {/* Filters */}
+      <motion.section 
+        className="container mx-auto px-4"
+        variants={fadeIn}
+      >
+        <Card className="p-6">
+          <div className="flex flex-col md:flex-row gap-4 items-center">
+            <div className="flex items-center gap-2">
+              <Filter className="w-5 h-5 text-primary" />
+              <span className="font-medium">Filters:</span>
+            </div>
+            
+            <Select value={timeRange} onValueChange={setTimeRange}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Time Range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Time</SelectItem>
+                <SelectItem value="week">Last Week</SelectItem>
+                <SelectItem value="month">Last Month</SelectItem>
+                <SelectItem value="quarter">Last Quarter</SelectItem>
+                <SelectItem value="year">Last Year</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Select value={propertyType} onValueChange={setPropertyType}>
+              <SelectTrigger className="w-48">
+                <SelectValue placeholder="Property Type" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Types</SelectItem>
+                <SelectItem value="House">House</SelectItem>
+                <SelectItem value="Villa">Villa</SelectItem>
+                <SelectItem value="Apartment">Apartment</SelectItem>
+                <SelectItem value="Condo">Condo</SelectItem>
+                <SelectItem value="Commercial">Commercial</SelectItem>
+                <SelectItem value="Land">Land</SelectItem>
+              </SelectContent>
+            </Select>
+
+            <Button onClick={loadAnalytics} variant="outline">
               <RefreshCw className="w-4 h-4 mr-2" />
               Refresh
             </Button>
-            <Button onClick={exportAnalytics}>
-              <Download className="w-4 h-4 mr-2" />
-              Export Data
-            </Button>
           </div>
-        </div>
-      </div>
-
-      {/* Filters */}
-      <Card className="mb-8">
-        <CardContent className="p-6">
-          <div className="flex flex-col md:flex-row gap-4">
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Time Range</label>
-              <Select value={timeRange} onValueChange={setTimeRange}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Time</SelectItem>
-                  <SelectItem value="1">Last Month</SelectItem>
-                  <SelectItem value="3">Last 3 Months</SelectItem>
-                  <SelectItem value="6">Last 6 Months</SelectItem>
-                  <SelectItem value="12">Last Year</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-            <div className="flex-1">
-              <label className="text-sm font-medium mb-2 block">Property Type</label>
-              <Select value={propertyType} onValueChange={setPropertyType}>
-                <SelectTrigger>
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Types</SelectItem>
-                  <SelectItem value="Villa">Villa</SelectItem>
-                  <SelectItem value="House">House</SelectItem>
-                  <SelectItem value="Condo">Condo</SelectItem>
-                  <SelectItem value="Apartment">Apartment</SelectItem>
-                  <SelectItem value="Land">Land</SelectItem>
-                  <SelectItem value="Commercial">Commercial</SelectItem>
-                  <SelectItem value="Estate">Estate</SelectItem>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+        </Card>
+      </motion.section>
 
       {/* Key Metrics */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
-        <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-90">Total Properties</p>
-                <p className="text-3xl font-bold">{analytics.totalProperties}</p>
+      <motion.section 
+        className="container mx-auto px-4"
+        variants={fadeIn}
+      >
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90">Total Properties</p>
+                  <p className="text-3xl font-bold">{analytics.totalProperties}</p>
+                </div>
+                <Home className="w-8 h-8 opacity-80" />
               </div>
-              <Home className="w-8 h-8 opacity-80" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-90">Total Value</p>
-                <p className="text-3xl font-bold">{formatCurrency(analytics.totalValue)}</p>
+          <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90">Total Value</p>
+                  <p className="text-3xl font-bold">{formatCurrency(analytics.totalValue)}</p>
+                </div>
+                <DollarSign className="w-8 h-8 opacity-80" />
               </div>
-              <DollarSign className="w-8 h-8 opacity-80" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-90">Average Price</p>
-                <p className="text-3xl font-bold">{formatCurrency(analytics.averagePrice)}</p>
+          <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90">Average Price</p>
+                  <p className="text-3xl font-bold">{formatCurrency(analytics.averagePrice)}</p>
+                </div>
+                <TrendingUp className="w-8 h-8 opacity-80" />
               </div>
-              <TrendingUp className="w-8 h-8 opacity-80" />
-            </div>
-          </CardContent>
-        </Card>
+            </CardContent>
+          </Card>
 
-        <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm opacity-90">Price Range</p>
-                <p className="text-lg font-bold">{formatCurrency(analytics.priceRange.min)} - {formatCurrency(analytics.priceRange.max)}</p>
+          <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white">
+            <CardContent className="p-6">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm opacity-90">Property Types</p>
+                  <p className="text-3xl font-bold">{Object.keys(analytics.propertyTypes).length}</p>
+                </div>
+                <MapPin className="w-8 h-8 opacity-80" />
               </div>
-              <Target className="w-8 h-8 opacity-80" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
+            </CardContent>
+          </Card>
+        </div>
+      </motion.section>
 
-      {/* Property Types Distribution */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-8">
+      {/* Detailed Analytics */}
+      <motion.section 
+        className="container mx-auto px-4"
+        variants={fadeIn}
+      >
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Property Types Distribution */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Building2 className="w-5 h-5" />
+                Property Types Distribution
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {Object.keys(analytics.propertyTypes).length > 0 ? (
+                <div className="space-y-3">
+                  {Object.entries(analytics.propertyTypes)
+                    .sort(([,a], [,b]) => b - a)
+                    .map(([type, count]) => (
+                      <div key={type} className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          {getPropertyTypeIcon(type)}
+                          <span className="font-medium">{type}</span>
+                        </div>
+                        <span className="text-sm text-muted-foreground">{count} properties</span>
+                      </div>
+                    ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-center py-8">No property types data available</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Top Performers */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Star className="w-5 h-5" />
+                Top Performers (by Price)
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {analytics.topPerformers.length > 0 ? (
+                <div className="space-y-3">
+                  {analytics.topPerformers.map((property, index) => (
+                    <div key={property.id} className="flex items-center justify-between">
+                      <div className="flex items-center gap-3">
+                        <div className="w-6 h-6 rounded-full bg-primary text-white flex items-center justify-center text-xs font-bold">
+                          {index + 1}
+                        </div>
+                        <div>
+                          <p className="font-medium line-clamp-1">{property.title}</p>
+                          <p className="text-sm text-muted-foreground">{property.location}</p>
+                        </div>
+                      </div>
+                      <span className="font-bold text-primary">{formatCurrency(property.price)}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-center py-8">No top performers data available</p>
+              )}
+            </CardContent>
+          </Card>
+
+          {/* Price Range */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <DollarSign className="w-5 h-5" />
+                Price Range
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              <div className="space-y-4">
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Minimum Price</span>
+                  <span className="font-bold text-green-600">{formatCurrency(analytics.priceRange.min)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Maximum Price</span>
+                  <span className="font-bold text-red-600">{formatCurrency(analytics.priceRange.max)}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-sm text-muted-foreground">Price Difference</span>
+                  <span className="font-bold text-primary">
+                    {formatCurrency(analytics.priceRange.max - analytics.priceRange.min)}
+                  </span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Recent Activity */}
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center gap-2">
+                <Clock className="w-5 h-5" />
+                Recent Activity
+              </CardTitle>
+            </CardHeader>
+            <CardContent>
+              {analytics.recentActivity.length > 0 ? (
+                <div className="space-y-3">
+                  {analytics.recentActivity.map((property) => (
+                    <div key={property.id} className="flex items-center justify-between">
+                      <div>
+                        <p className="font-medium line-clamp-1">{property.title}</p>
+                        <p className="text-sm text-muted-foreground">{formatDate(property.created_at)}</p>
+                      </div>
+                      <span className="text-sm text-muted-foreground">{formatCurrency(property.price)}</span>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-muted-foreground text-center py-8">No recent activity</p>
+              )}
+            </CardContent>
+          </Card>
+        </div>
+      </motion.section>
+
+      {/* Export Section */}
+      <motion.section 
+        className="container mx-auto px-4"
+        variants={fadeIn}
+      >
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <BarChart3 className="w-5 h-5" />
-              Property Types Distribution
+              <Download className="w-5 h-5" />
+              Export Analytics
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <div className="space-y-4">
-              {Object.entries(analytics.propertyTypes).map(([type, count]) => (
-                <div key={type} className="flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    {getPropertyTypeIcon(type)}
-                    <span className="font-medium">{type}</span>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <div className="w-32 bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-primary h-2 rounded-full" 
-                        style={{ width: `${(count / analytics.totalProperties) * 100}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm text-muted-foreground w-8 text-right">{count}</span>
-                  </div>
-                </div>
-              ))}
+            <div className="flex flex-wrap gap-4">
+              <Button variant="outline">
+                <Download className="w-4 h-4 mr-2" />
+                Export as CSV
+              </Button>
+              <Button variant="outline">
+                <Download className="w-4 h-4 mr-2" />
+                Export as PDF
+              </Button>
+              <Button variant="outline">
+                <Download className="w-4 h-4 mr-2" />
+                Export Report
+              </Button>
             </div>
           </CardContent>
         </Card>
-
-        {/* Top Locations */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <MapPin className="w-5 h-5" />
-              Top Locations
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-4">
-              {Object.entries(analytics.locationStats)
-                .sort(([,a], [,b]) => b - a)
-                .slice(0, 5)
-                .map(([location, count]) => (
-                <div key={location} className="flex items-center justify-between">
-                  <span className="font-medium">{location}</span>
-                  <div className="flex items-center gap-2">
-                    <div className="w-32 bg-gray-200 rounded-full h-2">
-                      <div 
-                        className="bg-primary h-2 rounded-full" 
-                        style={{ width: `${(count / analytics.totalProperties) * 100}%` }}
-                      ></div>
-                    </div>
-                    <span className="text-sm text-muted-foreground w-8 text-right">{count}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Monthly Trends */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <TrendingUp className="w-5 h-5" />
-            Monthly Property Additions
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="grid grid-cols-2 md:grid-cols-6 gap-4">
-            {Object.entries(analytics.monthlyTrends).map(([month, count]) => (
-              <div key={month} className="text-center">
-                <div className="text-sm text-muted-foreground mb-1">{month}</div>
-                <div className="text-2xl font-bold text-primary">{count}</div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Top Performers */}
-      <Card className="mb-8">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Award className="w-5 h-5" />
-            Top Performing Properties (by Price)
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {analytics.topPerformers.map((property, index) => (
-              <div key={property.id} className="flex items-center justify-between p-4 bg-muted/50 rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="w-8 h-8 bg-primary text-primary-foreground rounded-full flex items-center justify-center font-bold">
-                    {index + 1}
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">{property.title}</h4>
-                    <p className="text-sm text-muted-foreground">{property.location}</p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-primary">{formatCurrency(property.price)}</p>
-                  <p className="text-sm text-muted-foreground">{property.type}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
-
-      {/* Recent Activity */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Clock className="w-5 h-5" />
-            Recent Activity
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-4">
-            {analytics.recentActivity.map((property) => (
-              <div key={property.id} className="flex items-center justify-between p-4 border rounded-lg">
-                <div className="flex items-center gap-4">
-                  <div className="w-12 h-12 bg-muted rounded-lg flex items-center justify-center">
-                    {getPropertyTypeIcon(property.type)}
-                  </div>
-                  <div>
-                    <h4 className="font-semibold">{property.title}</h4>
-                    <p className="text-sm text-muted-foreground">{property.location}</p>
-                    <p className="text-xs text-muted-foreground">
-                      Added {new Date(property.createdAt || property.id).toLocaleDateString()}
-                    </p>
-                  </div>
-                </div>
-                <div className="text-right">
-                  <p className="font-bold text-primary">{formatCurrency(property.price)}</p>
-                  <p className="text-sm text-muted-foreground">{property.type}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </CardContent>
-      </Card>
+      </motion.section>
     </motion.div>
   );
 };

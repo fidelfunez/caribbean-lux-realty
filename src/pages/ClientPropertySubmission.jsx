@@ -146,6 +146,15 @@ const ClientPropertySubmission = () => {
 
       // Save to Supabase for admin review
       const submissionData = {
+        // Original required fields
+        name: processedData.contactName,
+        email: processedData.contactEmail,
+        phone: processedData.contactPhone,
+        property_type: processedData.type,
+        budget: processedData.price,
+        message: `Property: ${processedData.title}\nLocation: ${processedData.location}\nDescription: ${processedData.description}\nBedrooms: ${processedData.beds}\nBathrooms: ${processedData.baths}\nParking: ${processedData.parking}\nArea: ${processedData.area}`,
+        
+        // New detailed fields
         title: processedData.title,
         location: processedData.location,
         description: processedData.description,

@@ -1,14 +1,32 @@
 import { createClient } from '@supabase/supabase-js';
 
-// Initialize Supabase client
+// Initialize Supabase client with error handling
 const supabaseUrl = import.meta.env.VITE_SUPABASE_URL;
 const supabaseAnonKey = import.meta.env.VITE_SUPABASE_ANON_KEY;
+const supabaseServiceKey = import.meta.env.VITE_SUPABASE_SERVICE_ROLE_KEY;
 
-const supabase = createClient(supabaseUrl, supabaseAnonKey);
+// Validate environment variables
+if (!supabaseUrl || !supabaseAnonKey) {
+  console.error('Missing required Supabase environment variables:', {
+    url: !!supabaseUrl,
+    anonKey: !!supabaseAnonKey,
+    serviceKey: !!supabaseServiceKey
+  });
+}
+
+// Create two clients: one for public operations (anon key) and one for admin operations (service key)
+const supabase = createClient(supabaseUrl || '', supabaseAnonKey || '');
+const supabaseAdmin = createClient(supabaseUrl || '', supabaseServiceKey || supabaseAnonKey || '');
 
 // Properties functions
 export const getProperties = async () => {
   try {
+    // Check if Supabase is properly configured
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn('Supabase not configured, returning empty array');
+      return [];
+    }
+
     const { data, error } = await supabase
       .from('properties')
       .select('*')
@@ -28,6 +46,12 @@ export const getProperties = async () => {
 
 export const getPropertyById = async (id) => {
   try {
+    // Check if Supabase is properly configured
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn('Supabase not configured, returning null');
+      return null;
+    }
+
     const { data, error } = await supabase
       .from('properties')
       .select('*')
@@ -48,17 +72,25 @@ export const getPropertyById = async (id) => {
 
 export const addProperty = async (newPropertyData) => {
   try {
-    const { data, error } = await supabase
+    // Check if Supabase is properly configured
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Supabase not configured. Please check your environment variables.');
+    }
+
+    console.log('Attempting to add property to Supabase...');
+    // Use admin client for insert operations
+    const { data, error } = await supabaseAdmin
       .from('properties')
       .insert([newPropertyData])
       .select()
       .single();
 
     if (error) {
-      console.error('Error adding property:', error);
+      console.error('Supabase error adding property:', error);
       throw error;
     }
 
+    console.log('Property added successfully:', data);
     return data;
   } catch (error) {
     console.error('Error in addProperty:', error);
@@ -68,7 +100,13 @@ export const addProperty = async (newPropertyData) => {
 
 export const updateProperty = async (propertyId, updatedData) => {
   try {
-    const { data, error } = await supabase
+    // Check if Supabase is properly configured
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Supabase not configured. Please check your environment variables.');
+    }
+
+    // Use admin client for update operations
+    const { data, error } = await supabaseAdmin
       .from('properties')
       .update(updatedData)
       .eq('id', propertyId)
@@ -89,7 +127,13 @@ export const updateProperty = async (propertyId, updatedData) => {
 
 export const deleteProperty = async (propertyId) => {
   try {
-    const { error } = await supabase
+    // Check if Supabase is properly configured
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Supabase not configured. Please check your environment variables.');
+    }
+
+    // Use admin client for delete operations
+    const { error } = await supabaseAdmin
       .from('properties')
       .delete()
       .eq('id', propertyId);
@@ -109,6 +153,12 @@ export const deleteProperty = async (propertyId) => {
 // Blog functions
 export const getBlogPosts = async () => {
   try {
+    // Check if Supabase is properly configured
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn('Supabase not configured, returning empty array');
+      return [];
+    }
+
     console.log('Supabase URL:', supabaseUrl);
     console.log('Supabase Key exists:', !!supabaseAnonKey);
     
@@ -132,6 +182,12 @@ export const getBlogPosts = async () => {
 
 export const getBlogPostBySlug = async (slug) => {
   try {
+    // Check if Supabase is properly configured
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn('Supabase not configured, returning null');
+      return null;
+    }
+
     const { data, error } = await supabase
       .from('blog_posts')
       .select('*')
@@ -152,7 +208,13 @@ export const getBlogPostBySlug = async (slug) => {
 
 export const addBlogPost = async (newBlogData) => {
   try {
-    const { data, error } = await supabase
+    // Check if Supabase is properly configured
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Supabase not configured. Please check your environment variables.');
+    }
+
+    // Use admin client for insert operations
+    const { data, error } = await supabaseAdmin
       .from('blog_posts')
       .insert([newBlogData])
       .select()
@@ -172,7 +234,13 @@ export const addBlogPost = async (newBlogData) => {
 
 export const updateBlogPost = async (postId, updatedData) => {
   try {
-    const { data, error } = await supabase
+    // Check if Supabase is properly configured
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Supabase not configured. Please check your environment variables.');
+    }
+
+    // Use admin client for update operations
+    const { data, error } = await supabaseAdmin
       .from('blog_posts')
       .update(updatedData)
       .eq('id', postId)
@@ -193,7 +261,13 @@ export const updateBlogPost = async (postId, updatedData) => {
 
 export const deleteBlogPost = async (postId) => {
   try {
-    const { error } = await supabase
+    // Check if Supabase is properly configured
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Supabase not configured. Please check your environment variables.');
+    }
+
+    // Use admin client for delete operations
+    const { error } = await supabaseAdmin
       .from('blog_posts')
       .delete()
       .eq('id', postId);
@@ -213,6 +287,12 @@ export const deleteBlogPost = async (postId) => {
 // Client submissions functions
 export const getClientSubmissions = async () => {
   try {
+    // Check if Supabase is properly configured
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn('Supabase not configured, returning empty array');
+      return [];
+    }
+
     const { data, error } = await supabase
       .from('client_submissions')
       .select('*')
@@ -232,7 +312,13 @@ export const getClientSubmissions = async () => {
 
 export const addClientSubmission = async (submissionData) => {
   try {
-    const { data, error } = await supabase
+    // Check if Supabase is properly configured
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Supabase not configured. Please check your environment variables.');
+    }
+
+    // Use admin client for insert operations
+    const { data, error } = await supabaseAdmin
       .from('client_submissions')
       .insert([submissionData])
       .select()
@@ -252,7 +338,13 @@ export const addClientSubmission = async (submissionData) => {
 
 export const updateClientSubmission = async (submissionId, updatedData) => {
   try {
-    const { data, error } = await supabase
+    // Check if Supabase is properly configured
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Supabase not configured. Please check your environment variables.');
+    }
+
+    // Use admin client for update operations
+    const { data, error } = await supabaseAdmin
       .from('client_submissions')
       .update(updatedData)
       .eq('id', submissionId)
@@ -273,7 +365,13 @@ export const updateClientSubmission = async (submissionId, updatedData) => {
 
 export const deleteClientSubmission = async (submissionId) => {
   try {
-    const { error } = await supabase
+    // Check if Supabase is properly configured
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Supabase not configured. Please check your environment variables.');
+    }
+
+    // Use admin client for delete operations
+    const { error } = await supabaseAdmin
       .from('client_submissions')
       .delete()
       .eq('id', submissionId);

@@ -8,7 +8,7 @@ import React, { useState, useRef } from 'react';
 
     import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
     import { useToast } from '@/components/ui/use-toast';
-    import { addProperty } from '@/lib/propertyUtils';
+    import { addProperty } from '@/lib/supabaseUtils';
     import { optimizeImage, optimizeImages, validateImageFile, formatFileSize } from '@/lib/imageUtils';
     import { DollarSign, Type, MapPin as MapPinIcon, BedDouble, Bath, CarFront, Maximize, Info, Image as ImageIcon, ListChecks, CalendarDays, Clock, PlusCircle, Trash2, UploadCloud, AlertCircle } from 'lucide-react';
 
@@ -40,6 +40,7 @@ import React, { useState, useRef } from 'react';
       });
       const [imagePreviews, setImagePreviews] = useState({ main: null, gallery: [] });
       const [isOptimizing, setIsOptimizing] = useState(false);
+      const [isSubmitting, setIsSubmitting] = useState(false);
 
       const mainImageInputRef = useRef(null);
       const galleryImageInputRef = useRef(null);
@@ -218,9 +219,14 @@ import React, { useState, useRef } from 'react';
       };
 
 
-      const handleSubmit = (e) => {
+      const handleSubmit = async (e) => {
         e.preventDefault();
+        
+        if (isSubmitting) return; // Prevent double submission
+        
         try {
+          setIsSubmitting(true);
+          
           const numericFields = ['price', 'beds', 'baths', 'parking', 'area'];
           const processedData = { ...formData };
           numericFields.forEach(field => {
@@ -246,21 +252,49 @@ import React, { useState, useRef } from 'react';
             processedData.images = ['https://images.unsplash.com/photo-1582407947304-fd86f028f716?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cmVhbCUyMGVzdGF0ZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60'];
           }
 
+          // Add created_at timestamp
+          processedData.created_at = new Date().toISOString();
 
-          addProperty(processedData);
+          // Log the data being sent for debugging
+          console.log('Data being sent to Supabase:', processedData);
+
+          const newProperty = await addProperty(processedData);
+          
           toast({
             title: "Property Added! 🎉",
-            description: `${formData.title} has been successfully listed.`,
+            description: `${formData.title} has been successfully listed and saved to the database.`,
             variant: "default",
           });
-          navigate('/admin/properties/add');
+          
+          // Reset form
+          setFormData({
+            title: '',
+            location: '',
+            price: '',
+            description: '',
+            type: '',
+            beds: '',
+            baths: '',
+            parking: '',
+            area: '',
+            image: '',
+            images: [],
+            features: [''],
+            ownershipYears: '',
+            timeToAttractions: '',
+          });
+          setImagePreviews({ main: null, gallery: [] });
+          
+          navigate('/admin/properties');
         } catch (error) {
           console.error("Failed to add property:", error);
           toast({
             title: "Uh oh! Something went wrong.",
-            description: "There was a problem saving the property. Please try again.",
+            description: "There was a problem saving the property to the database. Please try again.",
             variant: "destructive",
           });
+        } finally {
+          setIsSubmitting(false);
         }
       };
 
@@ -479,8 +513,13 @@ import React, { useState, useRef } from 'react';
 
 
                 <div className="flex justify-end pt-6">
-                  <Button type="submit" size="lg" className="bg-gradient-to-r from-primary to-turquoise-dark hover:from-primary/90 hover:to-turquoise-dark/90 text-lg px-8 py-3">
-                    Add Property
+                  <Button 
+                    type="submit" 
+                    size="lg" 
+                    disabled={isSubmitting || isOptimizing}
+                    className="bg-gradient-to-r from-primary to-turquoise-dark hover:from-primary/90 hover:to-turquoise-dark/90 text-lg px-8 py-3"
+                  >
+                    {isSubmitting ? 'Saving to Database...' : 'Add Property'}
                   </Button>
                 </div>
               </form>

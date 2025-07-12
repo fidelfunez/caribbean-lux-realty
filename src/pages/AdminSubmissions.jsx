@@ -6,6 +6,7 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { getClientSubmissions, updateClientSubmission, deleteClientSubmission } from '@/lib/supabaseUtils';
 import { getDisplayValue } from '@/lib/fieldMappers';
+import { useAdmin } from '@/context/AdminContext';
 import { 
   CheckCircle, 
   XCircle, 
@@ -52,6 +53,7 @@ const statusIcons = {
 
 const AdminSubmissions = () => {
   const { toast } = useToast();
+  const { isAdmin } = useAdmin();
   const [submissions, setSubmissions] = useState([]);
   const [filteredSubmissions, setFilteredSubmissions] = useState([]);
   const [statusFilter, setStatusFilter] = useState('all');
@@ -69,7 +71,13 @@ const AdminSubmissions = () => {
 
   const loadSubmissions = async () => {
     try {
+      console.log('Admin status:', isAdmin);
       const submissionsData = await getClientSubmissions();
+      console.log('Loaded submissions:', submissionsData);
+      console.log('Number of submissions:', submissionsData.length);
+      if (submissionsData.length > 0) {
+        console.log('First submission structure:', submissionsData[0]);
+      }
       setSubmissions(submissionsData);
     } catch (error) {
       console.error('Error loading submissions:', error);

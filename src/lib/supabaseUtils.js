@@ -318,7 +318,8 @@ export const getClientSubmissions = async () => {
       return [];
     }
 
-    const { data, error } = await supabase
+    // Use admin client since RLS requires authentication for SELECT
+    const { data, error } = await supabaseAdmin
       .from('client_submissions')
       .select('*')
       .order('created_at', { ascending: false });

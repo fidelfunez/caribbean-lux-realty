@@ -318,19 +318,30 @@ export const getClientSubmissions = async () => {
       return [];
     }
 
+    console.log('Fetching client submissions with admin client...');
+    console.log('Supabase URL:', supabaseUrl);
+    console.log('Service key exists:', !!supabaseServiceKey);
+
     // Use admin client since RLS requires authentication for SELECT
     const { data, error } = await supabaseAdmin
       .from('client_submissions')
       .select('*')
       .order('created_at', { ascending: false });
 
+    console.log('Raw Supabase response:', { data, error });
+
     if (error) {
       console.error('Error fetching client submissions:', error);
       return [];
     }
 
+    console.log('Raw data before conversion:', data);
+    
     // Convert database format to frontend format
-    return dbArrayToFrontend(data || [], 'client_submissions');
+    const convertedData = dbArrayToFrontend(data || [], 'client_submissions');
+    console.log('Converted data:', convertedData);
+    
+    return convertedData;
   } catch (error) {
     console.error('Error in getClientSubmissions:', error);
     return [];

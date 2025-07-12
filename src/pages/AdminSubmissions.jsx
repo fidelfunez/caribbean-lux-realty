@@ -6,7 +6,8 @@ import { Badge } from '@/components/ui/badge';
 import { useToast } from '@/components/ui/use-toast';
 import { getClientSubmissions, updateClientSubmission, deleteClientSubmission } from '@/lib/supabaseUtils';
 import { getDisplayValue } from '@/lib/fieldMappers';
-import { useAdmin } from '@/context/AdminContext';
+import { useAdmin } from '@/context/AdminContext.jsx';
+import { testDatabaseConnection, testRLSPolicies } from '@/lib/testConnection';
 import { 
   CheckCircle, 
   XCircle, 
@@ -303,6 +304,19 @@ const AdminSubmissions = () => {
         >
           <RefreshCw className="h-4 w-4" />
           Refresh
+        </Button>
+        
+        <Button 
+          variant="outline" 
+          onClick={async () => {
+            console.log('=== RUNNING DATABASE TESTS ===');
+            await testDatabaseConnection();
+            await testRLSPolicies();
+          }}
+          className="flex items-center gap-2"
+        >
+          <AlertCircle className="h-4 w-4" />
+          Test Connection
         </Button>
       </div>
 

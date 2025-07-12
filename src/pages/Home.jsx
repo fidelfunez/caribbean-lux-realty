@@ -2,20 +2,18 @@ import React, { useState, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Link } from 'react-router-dom';
-import { MapPin, Home as HomeIconLucide, DollarSign, ArrowRight, Users, Award, MessageCircle, Star, CheckCircle, Clock, Phone, Mail, Search, Filter, BedDouble, Bath, CarFront, Shield, Building2 } from 'lucide-react';
+import { MapPin, Home as HomeIconLucide, DollarSign, ArrowRight, Users, Award, MessageCircle, Star, CheckCircle, Clock, Phone, Mail, Search, Filter, BedDouble, Bath, CarFront } from 'lucide-react';
 import NewsletterSignup from '@/components/NewsletterSignup';
 import { getProperties } from '@/lib/supabaseUtils';
 import { getContentField, getWebsiteContent } from '@/lib/contentUtils';
 
 const Home = () => {
   const [featuredProperties, setFeaturedProperties] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [content, setContent] = useState({});
 
   useEffect(() => {
     const loadFeaturedProperties = async () => {
       try {
-        setLoading(true);
         const allProperties = await getProperties();
         // Show up to 3 properties as featured, or show empty state
         const featured = allProperties.slice(0, 3);
@@ -23,8 +21,6 @@ const Home = () => {
       } catch (error) {
         console.error('Error loading featured properties:', error);
         setFeaturedProperties([]);
-      } finally {
-        setLoading(false);
       }
     };
 
@@ -62,15 +58,7 @@ const Home = () => {
     return value;
   };
 
-  const formatPrice = (price) => {
-    if (!price) return 'Price on request';
-    return new Intl.NumberFormat('en-US', {
-      style: 'currency',
-      currency: 'USD',
-      minimumFractionDigits: 0,
-      maximumFractionDigits: 0,
-    }).format(price);
-  };
+
 
   return (
     <div className="space-y-4 md:space-y-8">
@@ -122,208 +110,366 @@ const Home = () => {
           </div>
           
           {/* Mobile Hero Actions */}
-          <div className="lg:hidden flex flex-col space-y-4 mb-8">
-            <Button size="lg" asChild variant="outline" className="border-white text-white hover:bg-white hover:text-primary shadow-lg text-lg px-6 py-4 bg-white/20 backdrop-blur-sm font-semibold">
-              <Link to="/properties">
-                <Search className="mr-2 h-5 w-5" />
-                Browse Properties
-              </Link>
+          <div className="lg:hidden space-y-4 mb-8">
+            <Button size="lg" asChild variant="outline" className="border-white text-white hover:bg-white hover:text-primary shadow-md w-full bg-white/20 backdrop-blur-sm font-semibold">
+              <Link to="/properties">View Properties <ArrowRight className="ml-2 h-5 w-5" /></Link>
             </Button>
-            <Button size="lg" asChild variant="outline" className="border-white text-white hover:bg-white hover:text-primary shadow-lg text-lg px-6 py-4 bg-white/20 backdrop-blur-sm font-semibold">
-              <Link to="/contact">
-                <Phone className="mr-2 h-5 w-5" />
-                Contact Us
-              </Link>
+            <Button size="lg" asChild variant="outline" className="border-white text-white hover:bg-white hover:text-primary shadow-md w-full bg-white/20 backdrop-blur-sm font-semibold">
+              <Link to="/contact">Contact Us</Link>
             </Button>
+          </div>
+          
+          {/* Trust Indicators */}
+          <div className="flex flex-wrap justify-center gap-6 text-white/90 text-sm lg:text-base">
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              <span>{getContent('home', 'hero', 'trustIndicator1')}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              <span>{getContent('home', 'hero', 'trustIndicator2')}</span>
+            </div>
+            <div className="flex items-center gap-2">
+              <CheckCircle className="w-4 h-4" />
+              <span>{getContent('home', 'hero', 'trustIndicator3')}</span>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Featured Properties Section */}
-      {!loading && featuredProperties.length > 0 && (
-        <section className="container mx-auto px-4 py-12">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-              {getContent('home', 'featured', 'title')}
-            </h2>
-            <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-              {getContent('home', 'featured', 'subtitle')}
-            </p>
-          </div>
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {featuredProperties.map((property) => (
-              <Card key={property.id} className="group hover:shadow-xl transition-all duration-300 overflow-hidden">
-                <div className="relative h-48 overflow-hidden">
-                  <img
-                    src={property.image || 'https://images.unsplash.com/photo-1582407947304-fd86f028f716?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cmVhbCUyMGVzdGF0ZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60'}
-                    alt={property.title}
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                    loading="lazy"
-                  />
-                  <div className="absolute top-4 left-4">
-                    <div className="flex items-center space-x-2 bg-white/90 backdrop-blur-sm rounded-full px-3 py-1">
-                      <HomeIconLucide className="w-4 h-4" />
-                      <span className="text-xs font-medium text-gray-700">
-                        {property.type || 'Property'}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-                
-                <CardContent className="p-6">
-                  <h3 className="font-semibold text-xl mb-2 line-clamp-2">
-                    {property.title}
-                  </h3>
-                  
-                  <div className="flex items-center text-sm text-gray-600 mb-3">
-                    <MapPin className="w-4 h-4 mr-1" />
-                    <span className="line-clamp-1">{property.location}</span>
-                  </div>
-                  
-                  <div className="flex items-center justify-between mb-4">
-                    <span className="font-bold text-xl text-primary">
-                      {formatPrice(property.price)}
-                    </span>
-                    {property.beds && property.baths && (
-                      <div className="text-sm text-gray-600">
-                        {property.beds} bed • {property.baths} bath
-                      </div>
-                    )}
-                  </div>
-                  
-                  {property.description && (
-                    <p className="text-sm text-gray-600 line-clamp-2 mb-4">
-                      {property.description}
-                    </p>
-                  )}
-                </CardContent>
-                
-                <CardFooter className="p-6 pt-0">
-                  <Button asChild className="w-full">
-                    <Link to={`/properties/${property.id}`}>
-                      View Details
-                      <ArrowRight className="w-4 h-4 ml-2" />
-                    </Link>
-                  </Button>
-                </CardFooter>
-              </Card>
-            ))}
-          </div>
-
-          <div className="text-center mt-8">
-            <Button asChild variant="outline" size="lg">
-              <Link to="/properties">
-                View All Properties
-                <ArrowRight className="w-4 h-4 ml-2" />
-              </Link>
-            </Button>
-          </div>
-        </section>
-      )}
-
-      {/* Services Section */}
-      <section className="container mx-auto px-4 py-12">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
-            {getContent('home', 'services', 'title')}
-          </h2>
-          <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            {getContent('home', 'services', 'subtitle')}
+      {/* Welcome Text Section */}
+      <section className="container mx-auto px-4 py-8 md:py-12 lg:py-16">
+        <div className="text-center max-w-4xl mx-auto">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-6 text-primary">{getContent('home', 'welcome', 'title')}</h2>
+          <p className="text-lg lg:text-xl text-muted-foreground mb-0">
+            {getContent('home', 'welcome', 'description')}
           </p>
         </div>
+      </section>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+      {/* Features & Image Section */}
+      <section className="container mx-auto px-4 py-8 md:py-12 lg:py-16">
+        <div className="lg:grid lg:grid-cols-2 lg:gap-16 lg:items-center">
+          {/* Desktop: Left - Feature Cards */}
+          <div className="hidden lg:grid lg:grid-cols-1 gap-6">
+            {[
+              { icon: <HomeIconLucide className="w-8 h-8 text-primary" />, title: getContent('home', 'welcome', 'feature1Title'), description: getContent('home', 'welcome', 'feature1Desc') },
+              { icon: <Users className="w-8 h-8 text-primary" />, title: getContent('home', 'welcome', 'feature2Title'), description: getContent('home', 'welcome', 'feature2Desc') },
+              { icon: <Award className="w-8 h-8 text-primary" />, title: getContent('home', 'welcome', 'feature3Title'), description: getContent('home', 'welcome', 'feature3Desc') },
+            ].map((item, index) => (
+              <div key={item.title} className="flex items-start gap-4 p-4 bg-card rounded-xl shadow-md hover:shadow-lg border border-border/50">
+                <div className="flex-shrink-0">{item.icon}</div>
+                <div>
+                  <h3 className="text-xl font-semibold mb-2 text-foreground">{item.title}</h3>
+                  <p className="text-muted-foreground">{item.description}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+          
+          {/* Desktop: Right Image */}
+          <div className="hidden lg:block">
+            <div className="relative">
+              <img 
+                src="/Photos/roatan-island-optimized.jpg" 
+                alt="Roatán Island" 
+                className="rounded-2xl shadow-2xl w-full h-96 object-cover"
+              />
+              <div className="absolute bottom-6 left-6 bg-white/95 backdrop-blur-sm rounded-xl px-4 py-3 shadow-lg">
+                <div className="text-sm font-semibold text-primary">{getContent('home', 'featuredLocation', 'startingPrice')}</div>
+              </div>
+            </div>
+          </div>
+          
+          {/* Mobile: Centered Layout */}
+          <div className="lg:hidden">
+            <div className="grid md:grid-cols-3 gap-8 text-center">
+              {[
+                { icon: <HomeIconLucide className="w-12 h-12 text-primary mx-auto mb-4" />, title: getContent('home', 'welcome', 'feature1Title'), description: getContent('home', 'welcome', 'feature1Desc') },
+                { icon: <Users className="w-12 h-12 text-primary mx-auto mb-4" />, title: getContent('home', 'welcome', 'feature2Title'), description: getContent('home', 'welcome', 'feature2Desc') },
+                { icon: <Award className="w-12 h-12 text-primary mx-auto mb-4" />, title: getContent('home', 'welcome', 'feature3Title'), description: getContent('home', 'welcome', 'feature3Desc') },
+              ].map((item, index) => (
+                <div 
+                  key={item.title} 
+                  className="p-6 bg-card rounded-xl shadow-md hover:shadow-lg border border-border/50"
+                >
+                  {item.icon}
+                  <h3 className="text-xl font-semibold mb-2 text-foreground">{item.title}</h3>
+                  <p className="text-muted-foreground">{item.description}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* Enhanced Featured Properties Section - Desktop Larger Cards */}
+      <section className="container mx-auto px-4 py-8 md:py-12 lg:py-16">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-4 text-primary">
+          {featuredProperties.length > 0 ? 'Featured Properties' : 'Our Properties'}
+        </h2>
+        <p className="text-lg lg:text-xl text-center text-muted-foreground mb-12 max-w-4xl mx-auto">
+          {featuredProperties.length > 0 
+            ? "Discover our handpicked selection of exceptional properties in Roatán's most desirable locations."
+            : "We're working on adding amazing properties to our portfolio. Contact us to learn about upcoming listings or to list your property."
+          }
+        </p>
+        
+        {featuredProperties.length > 0 ? (
+          <>
+            {/* Desktop: Larger Grid */}
+            <div className="hidden lg:grid lg:grid-cols-3 gap-8">
+              {featuredProperties.map((property, index) => (
+                <div key={property.id} className="group">
+                  <Card className="overflow-hidden shadow-lg hover:shadow-xl border border-border/50 h-full">
+                    <div className="relative h-64 overflow-hidden">
+                      <img 
+                        alt={property.title} 
+                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" 
+                        src={property.image || "https://images.unsplash.com/photo-1582407947304-fd86f028f716?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cmVhbCUyMGVzdGF0ZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60"} 
+                        loading="lazy" 
+                      />
+                      {property.type && (
+                        <div className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                          {property.type}
+                        </div>
+                      )}
+                      {index === 0 && (
+                        <div className="absolute top-4 right-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          Featured
+                        </div>
+                      )}
+                    </div>
+                    <CardContent className="p-8">
+                      <CardTitle className="text-2xl mb-3">{property.title}</CardTitle>
+                      <div className="flex items-center text-muted-foreground mb-4">
+                        <MapPin className="w-5 h-5 mr-2" />
+                        <span className="text-lg">{property.location}</span>
+                      </div>
+                      <p className="text-muted-foreground mb-6 text-lg line-clamp-3">{property.description}</p>
+                      
+                      {/* Property Details */}
+                      <div className="flex items-center gap-6 mb-6 text-sm text-muted-foreground">
+                        {property.beds && (
+                          <div className="flex items-center gap-2">
+                            <BedDouble className="w-5 h-5 text-primary" />
+                            <span>{property.beds} beds</span>
+                          </div>
+                        )}
+                        {property.baths && (
+                          <div className="flex items-center gap-2">
+                            <Bath className="w-5 h-5 text-primary" />
+                            <span>{property.baths} baths</span>
+                          </div>
+                        )}
+                        {property.area && (
+                          <div className="flex items-center gap-2">
+                            <CarFront className="w-5 h-5 text-primary" />
+                            <span>{property.area} sq ft</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center text-primary font-bold text-xl">
+                          <DollarSign className="w-5 h-5 mr-2" />
+                          {property.price ? property.price.toLocaleString() : 'Contact for price'}
+                        </div>
+                        <Button asChild size="lg" className="bg-primary hover:bg-primary/90">
+                          <Link to={`/properties/${property.id}`}>
+                            View Details 
+                            <ArrowRight className="ml-2 h-5 w-5" />
+                          </Link>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ))}
+            </div>
+            
+            {/* Mobile: Compact Grid */}
+            <div className="lg:hidden grid md:grid-cols-3 gap-8">
+              {featuredProperties.map((property, index) => (
+                <div key={property.id} className="group">
+                  <Card className="overflow-hidden shadow-md hover:shadow-lg border border-border/50">
+                    <div className="relative h-48 overflow-hidden">
+                      <img 
+                        alt={property.title} 
+                        className="w-full h-full object-cover" 
+                        src={property.image || "https://images.unsplash.com/photo-1582407947304-fd86f028f716?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxzZWFyY2h8Mnx8cmVhbCUyMGVzdGF0ZXxlbnwwfHwwfHx8MA%3D%3D&auto=format&fit=crop&w=800&q=60"} 
+                        loading="lazy" 
+                      />
+                      {property.type && (
+                        <div className="absolute top-4 left-4 bg-primary text-primary-foreground px-3 py-1 rounded-full text-sm font-medium">
+                          {property.type}
+                        </div>
+                      )}
+                      {index === 0 && (
+                        <div className="absolute top-4 right-4 bg-gradient-to-r from-yellow-400 to-orange-500 text-white px-3 py-1 rounded-full text-sm font-medium">
+                          Featured
+                        </div>
+                      )}
+                    </div>
+                    <CardContent className="p-6">
+                      <CardTitle className="text-xl mb-2">{property.title}</CardTitle>
+                      <div className="flex items-center text-muted-foreground mb-3">
+                        <MapPin className="w-4 h-4 mr-1" />
+                        {property.location}
+                      </div>
+                      <p className="text-muted-foreground mb-4 line-clamp-2">{property.description}</p>
+                      
+                      {/* Property Details */}
+                      <div className="flex items-center gap-4 mb-4 text-sm text-muted-foreground">
+                        {property.beds && (
+                          <div className="flex items-center gap-1">
+                            <span>🛏️</span>
+                            <span>{property.beds} beds</span>
+                          </div>
+                        )}
+                        {property.baths && (
+                          <div className="flex items-center gap-1">
+                            <span>🚿</span>
+                            <span>{property.baths} baths</span>
+                          </div>
+                        )}
+                        {property.area && (
+                          <div className="flex items-center gap-1">
+                            <span>📐</span>
+                            <span>{property.area} sq ft</span>
+                          </div>
+                        )}
+                      </div>
+                      
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center text-primary font-bold">
+                          <DollarSign className="w-4 h-4 mr-1" />
+                          {property.price ? property.price.toLocaleString() : 'Contact for price'}
+                        </div>
+                        <Button asChild size="sm" className="bg-primary hover:bg-primary/90">
+                          <Link to={`/properties/${property.id}`}>View Details <ArrowRight className="ml-1 h-4 w-4" /></Link>
+                        </Button>
+                      </div>
+                    </CardContent>
+                  </Card>
+                </div>
+              ))}
+            </div>
+            
+            <div className="text-center mt-12">
+              <Button asChild size="lg" variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground text-lg px-8 py-4 bg-white/80 backdrop-blur-sm font-semibold shadow-lg">
+                <Link to="/properties">
+                  <Filter className="mr-2 h-5 w-5" />
+                  View All Properties 
+                  <ArrowRight className="ml-2 h-5 w-5" />
+                </Link>
+              </Button>
+            </div>
+          </>
+        ) : (
+          <div className="text-center py-16">
+            <div className="max-w-md mx-auto">
+              <div className="text-6xl mb-4">🏠</div>
+              <h3 className="text-xl font-semibold mb-4">No Properties Listed Yet</h3>
+              <p className="text-muted-foreground mb-6">
+                Our team is working on adding amazing properties to our portfolio. Contact us to learn about upcoming listings or to list your property.
+              </p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Button asChild variant="outline">
+                  <Link to="/contact">Contact Us</Link>
+                </Button>
+                <Button asChild>
+                  <Link to="/submit-property">List Your Property</Link>
+                </Button>
+              </div>
+            </div>
+          </div>
+        )}
+      </section>
+
+      {/* Testimonials Section */}
+      <section className="container mx-auto px-4">
+        <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold text-center mb-4 text-primary">{getContent('home', 'testimonials', 'title')}</h2>
+        <p className="text-lg lg:text-xl text-center text-muted-foreground mb-12 max-w-4xl mx-auto">
+          {getContent('home', 'testimonials', 'subtitle')}
+        </p>
+        
+        <div className="grid md:grid-cols-3 gap-8">
           {[
             {
-              title: "Property Sales & Acquisition",
-              description: "Expert guidance through every step of buying and selling luxury properties in the Caribbean.",
-              icon: <HomeIconLucide className="w-8 h-8" />,
-              href: "/services/property-sales-acquisition",
-              color: "bg-blue-500 hover:bg-blue-600"
+              name: getContent('home', 'testimonials', 'testimonial1Name'),
+              location: getContent('home', 'testimonials', 'testimonial1Location'),
+              text: getContent('home', 'testimonials', 'testimonial1Text'),
+              rating: 5
             },
             {
-              title: "Vacation Rental Management",
-              description: "Maximize your rental income with our comprehensive property management services.",
-              icon: <Clock className="w-8 h-8" />,
-              href: "/services/vacation-rental",
-              color: "bg-green-500 hover:bg-green-600"
+              name: getContent('home', 'testimonials', 'testimonial2Name'),
+              location: getContent('home', 'testimonials', 'testimonial2Location'),
+              text: getContent('home', 'testimonials', 'testimonial2Text'),
+              rating: 5
             },
             {
-              title: "Land Development",
-              description: "Transform raw land into profitable investments with our development expertise.",
-              icon: <Award className="w-8 h-8" />,
-              href: "/services/land-development",
-              color: "bg-orange-500 hover:bg-orange-600"
-            },
-            {
-              title: "Commercial Real Estate",
-              description: "Strategic commercial property investments for businesses and investors.",
-              icon: <Building2 className="w-8 h-8" />,
-              href: "/services/commercial-real-estate",
-              color: "bg-purple-500 hover:bg-purple-600"
-            },
-            {
-              title: "Relocation Assistance",
-              description: "Smooth transition services for individuals and families moving to the Caribbean.",
-              icon: <Users className="w-8 h-8" />,
-              href: "/services/relocation-assistance",
-              color: "bg-pink-500 hover:bg-pink-600"
-            },
-            {
-              title: "Legal Assistance",
-              description: "Expert legal guidance for all your real estate transactions and investments.",
-              icon: <Shield className="w-8 h-8" />,
-              href: "/services/legal-assistance",
-              color: "bg-indigo-500 hover:bg-indigo-600"
+              name: getContent('home', 'testimonials', 'testimonial3Name'),
+              location: getContent('home', 'testimonials', 'testimonial3Location'),
+              text: getContent('home', 'testimonials', 'testimonial3Text'),
+              rating: 5
             }
-          ].map((service, index) => (
-            <Card key={service.title} className="group hover:shadow-lg transition-all duration-300">
-              <CardContent className="p-6">
-                <div className={`w-16 h-16 rounded-lg ${service.color} flex items-center justify-center text-white mb-4 group-hover:scale-110 transition-transform duration-300`}>
-                  {service.icon}
-                </div>
-                
-                <h3 className="text-xl font-semibold mb-3">{service.title}</h3>
-                <p className="text-muted-foreground mb-4">{service.description}</p>
-                
-                <Button asChild variant="outline" className="w-full">
-                  <Link to={service.href}>
-                    Learn More
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </Link>
-                </Button>
-              </CardContent>
-            </Card>
+          ].map((testimonial, index) => (
+            <div 
+              key={index}
+              className="bg-card p-6 lg:p-8 rounded-xl shadow-md border border-border/50"
+            >
+              <div className="flex items-center gap-1 mb-4">
+                {[...Array(testimonial.rating)].map((_, i) => (
+                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
+                ))}
+              </div>
+              <p className="text-muted-foreground mb-4 italic text-lg">{testimonial.text}</p>
+              <div>
+                <div className="font-semibold text-foreground text-lg">{testimonial.name}</div>
+                <div className="text-sm text-muted-foreground">{testimonial.location}</div>
+              </div>
+            </div>
           ))}
         </div>
       </section>
 
-      {/* Newsletter Section */}
-      <NewsletterSignup />
-
-      {/* CTA Section */}
-      <section className="bg-gradient-to-r from-primary to-primary/80 text-white py-16">
-        <div className="container mx-auto px-4 text-center">
-          <h2 className="text-4xl font-bold mb-4">Ready to Find Your Dream Property?</h2>
-          <p className="text-xl mb-8 opacity-90">
-            Let us help you discover the perfect Caribbean paradise
-          </p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center">
-            <Button asChild size="lg" variant="secondary" className="text-lg py-6 px-8">
-              <Link to="/contact">
-                <Phone className="w-5 h-5 mr-2" />
-                Contact Us
-              </Link>
-            </Button>
-            <Button asChild size="lg" variant="outline" className="text-lg py-6 px-8 border-white text-white hover:bg-white hover:text-primary">
-              <Link to="/submit-property">
-                <HomeIconLucide className="w-5 h-5 mr-2" />
-                Submit Property
-              </Link>
-            </Button>
+      {/* Enhanced CTA Section */}
+      <section className="container mx-auto px-4">
+        <div className="relative rounded-xl p-8 md:p-12 lg:p-16 text-center text-white overflow-hidden">
+          {/* Background Image */}
+          <div className="absolute inset-0">
+            <img 
+              src="/Photos/boat-ocean-optimized.jpg" 
+              alt="Boat on Caribbean ocean" 
+              className="w-full h-full object-cover"
+              loading="lazy"
+            />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/60 via-turquoise-dark/60 to-primary/40"></div>
+          </div>
+          <div className="relative z-10">
+            <h2 className="text-3xl md:text-4xl lg:text-5xl font-bold mb-4 text-white drop-shadow-lg">{getContent('home', 'cta', 'title')}</h2>
+            <p className="text-lg lg:text-xl mb-8 text-white/95 max-w-3xl mx-auto drop-shadow-md">{getContent('home', 'cta', 'subtitle')}</p>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+              <Button size="lg" asChild variant="outline" className="border-white text-white hover:bg-white hover:text-primary shadow-md text-lg px-8 py-4 bg-white/20 backdrop-blur-sm font-semibold">
+                <Link to="/properties">
+                  <HomeIconLucide className="mr-2 h-5 w-5" />
+                  Browse Properties
+                </Link>
+              </Button>
+              <Button size="lg" asChild variant="outline" className="border-white text-white hover:bg-white hover:text-primary shadow-md text-lg px-8 py-4 bg-white/20 backdrop-blur-sm font-semibold">
+                <Link to="/contact">
+                  <MessageCircle className="mr-2 h-5 w-5" />
+                  Get in Touch
+                </Link>
+              </Button>
+            </div>
           </div>
         </div>
+      </section>
+
+      <section className="container mx-auto px-4">
+        <NewsletterSignup />
       </section>
     </div>
   );

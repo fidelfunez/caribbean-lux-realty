@@ -174,6 +174,11 @@ const ClientPropertySubmission = () => {
         created_at: new Date().toISOString()
       };
       
+      // Debug logging
+      console.log('Submitting data:', submissionData);
+      console.log('Contact name:', processedData.contactName);
+      console.log('Name field:', submissionData.name);
+      
       await addClientSubmission(submissionData);
 
       toast({

@@ -5,7 +5,7 @@ import { getProperties } from '@/lib/supabaseUtils';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { 
-  Home, 
+  Home as HomeIcon, 
   MapPin, 
   DollarSign, 
   BedDouble, 
@@ -75,7 +75,7 @@ const Home = () => {
     switch (type?.toLowerCase()) {
       case 'house':
       case 'villa':
-        return <Home className="w-4 h-4" />;
+        return <HomeIcon className="w-4 h-4" />;
       case 'apartment':
       case 'condo':
         return <Building2 className="w-4 h-4" />;
@@ -84,7 +84,7 @@ const Home = () => {
       case 'land':
         return <TreePalm className="w-4 h-4" />;
       default:
-        return <Home className="w-4 h-4" />;
+        return <HomeIcon className="w-4 h-4" />;
     }
   };
 
@@ -92,7 +92,7 @@ const Home = () => {
     {
       title: "Property Sales & Acquisition",
       description: "Expert guidance through every step of buying and selling luxury properties in the Caribbean.",
-      icon: <Home className="w-8 h-8" />,
+      icon: <HomeIcon className="w-8 h-8" />,
       href: "/services/property-sales-acquisition",
       color: "bg-blue-500 hover:bg-blue-600"
     },
@@ -134,7 +134,7 @@ const Home = () => {
   ];
 
   const stats = [
-    { label: "Properties Sold", value: "150+", icon: <Home className="w-6 h-6" /> },
+    { label: "Properties Sold", value: "150+", icon: <HomeIcon className="w-6 h-6" /> },
     { label: "Happy Clients", value: "200+", icon: <Heart className="w-6 h-6" /> },
     { label: "Years Experience", value: "15+", icon: <Award className="w-6 h-6" /> },
     { label: "Islands Covered", value: "8+", icon: <Globe className="w-6 h-6" /> }
@@ -174,7 +174,7 @@ const Home = () => {
           <motion.div variants={fadeIn} className="flex flex-col sm:flex-row gap-4 justify-center mb-12">
             <Button asChild size="lg" className="bg-primary hover:bg-primary/90 text-lg py-6 px-8">
               <Link to="/properties">
-                <Home className="w-5 h-5 mr-2" />
+                <HomeIcon className="w-5 h-5 mr-2" />
                 View Properties
               </Link>
             </Button>
@@ -359,7 +359,7 @@ const Home = () => {
             </Button>
             <Button asChild size="lg" variant="outline" className="text-lg py-6 px-8 border-white text-white hover:bg-white hover:text-primary">
               <Link to="/submit-property">
-                <Home className="w-5 h-5 mr-2" />
+                <HomeIcon className="w-5 h-5 mr-2" />
                 Submit Property
               </Link>
             </Button>

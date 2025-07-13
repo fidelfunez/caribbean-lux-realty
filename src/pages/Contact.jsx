@@ -102,17 +102,23 @@ const Contact = () => {
           {/* Contact Stats - Desktop Enhanced */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {[
-              { number: getContent('contact', 'hero', 'stat1Number'), label: getContent('contact', 'hero', 'stat1Label'), icon: <Clock className="w-6 h-6 text-white" /> },
-              { number: getContent('contact', 'hero', 'stat2Number'), label: getContent('contact', 'hero', 'stat2Label'), icon: <MessageCircle className="w-6 h-6 text-white" /> },
-              { number: getContent('contact', 'hero', 'stat3Number'), label: getContent('contact', 'hero', 'stat3Label'), icon: <Users className="w-6 h-6 text-white" /> },
-              { number: getContent('contact', 'hero', 'stat4Number'), label: getContent('contact', 'hero', 'stat4Label'), icon: <Award className="w-6 h-6 text-white" /> }
-            ].map((stat, index) => (
-              <div key={index} className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl shadow-md border border-white/20">
-                <div className="flex justify-center mb-2">{stat.icon}</div>
-                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white">{stat.number}</div>
-                <div className="text-sm text-white/80">{stat.label}</div>
-              </div>
-            ))}
+              { number: '24/7', label: 'Support Available', icon: <Clock className="w-6 h-6 text-white" /> },
+              { number: '< 2hrs', label: 'Response Time', icon: <MessageCircle className="w-6 h-6 text-white" /> },
+              { number: '500+', label: 'Happy Clients', icon: <Users className="w-6 h-6 text-white" /> },
+              { number: '15+', label: 'Years Experience', icon: <Award className="w-6 h-6 text-white" /> }
+            ].map((stat, index) => {
+              // Get dynamic content for this stat
+              const dynamicNumber = getContent('contact', 'hero', `stat${index + 1}Number`) || stat.number;
+              const dynamicLabel = getContent('contact', 'hero', `stat${index + 1}Label`) || stat.label;
+              
+              return (
+                              <div key={index} className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl shadow-md border border-white/20">
+                  <div className="flex justify-center mb-2">{stat.icon}</div>
+                  <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white">{dynamicNumber}</div>
+                  <div className="text-sm text-white/80">{dynamicLabel}</div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

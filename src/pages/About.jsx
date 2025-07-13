@@ -40,10 +40,11 @@ const About = () => {
     return value;
   };
 
+  // Team members with static data - content will be loaded dynamically
   const teamMembers = [
-    { name: getContent('about', 'team', 'member1Name'), role: getContent('about', 'team', 'member1Role'), image: "team-member-1", bio: getContent('about', 'team', 'member1Bio') },
-    { name: getContent('about', 'team', 'member2Name'), role: getContent('about', 'team', 'member2Role'), image: "team-member-2", bio: getContent('about', 'team', 'member2Bio') },
-    { name: getContent('about', 'team', 'member3Name'), role: getContent('about', 'team', 'member3Role'), image: "team-member-3", bio: getContent('about', 'team', 'member3Bio') },
+    { name: 'Alice Johnson', role: 'Lead Agent & Founder', image: "team-member-1", bio: 'With over 15 years of experience in Roatán real estate, Alice is passionate about connecting clients with their dream properties and ensuring a seamless transaction process.' },
+    { name: 'Bob Williams', role: 'Sales Specialist', image: "team-member-2", bio: 'Bob\'s deep knowledge of the local market and dedication to client satisfaction make him an invaluable asset to buyers and sellers alike.' },
+    { name: 'Carol Davis', role: 'Client Relations Manager', image: "team-member-3", bio: 'Carol ensures every client receives personalized attention and support throughout their real estate journey, making complex processes feel simple.' },
   ];
 
   return (
@@ -157,23 +158,28 @@ const About = () => {
             {[
               { 
                 icon: <Award className="w-12 h-12 text-turquoise-dark" />, 
-                title: getContent('about', 'whyChooseUs', 'feature1Title'), 
-                description: getContent('about', 'whyChooseUs', 'feature1Desc'),
+                title: 'Local Expertise', 
+                description: 'Unmatched knowledge of Roatán\'s neighborhoods, market trends, and legalities.',
                 color: "from-yellow-400/20 to-orange-400/20"
               },
               { 
                 icon: <ShieldCheck className="w-12 h-12 text-turquoise-dark" />, 
-                title: getContent('about', 'whyChooseUs', 'feature2Title'), 
-                description: getContent('about', 'whyChooseUs', 'feature2Desc'),
+                title: 'Trusted & Transparent', 
+                description: 'We operate with the highest ethical standards, ensuring clarity and honesty in all dealings.',
                 color: "from-blue-400/20 to-indigo-400/20"
               },
               { 
                 icon: <Handshake className="w-12 h-12 text-turquoise-dark" />, 
-                title: getContent('about', 'whyChooseUs', 'feature3Title'), 
-                description: getContent('about', 'whyChooseUs', 'feature3Desc'),
+                title: 'Client-Centric Approach', 
+                description: 'Your needs are our priority. We offer personalized service tailored to your unique goals.',
                 color: "from-green-400/20 to-emerald-400/20"
               },
-            ].map((item, index) => (
+            ].map((item, index) => {
+              // Get dynamic content for this feature
+              const dynamicTitle = getContent('about', 'whyChooseUs', `feature${index + 1}Title`) || item.title;
+              const dynamicDescription = getContent('about', 'whyChooseUs', `feature${index + 1}Desc`) || item.description;
+              
+              return (
               <div 
                 key={item.title} 
                 className={`p-8 bg-card rounded-2xl shadow-lg text-center hover:shadow-xl border border-border/50 transition-all duration-300 hover:-translate-y-1 group bg-gradient-to-br ${item.color}`}
@@ -183,10 +189,11 @@ const About = () => {
                     {item.icon}
                   </div>
                 </div>
-                <h3 className="text-xl md:text-2xl font-bold mb-4 text-foreground">{item.title}</h3>
-                <p className="text-muted-foreground leading-relaxed">{item.description}</p>
+                <h3 className="text-xl md:text-2xl font-bold mb-4 text-foreground">{dynamicTitle}</h3>
+                <p className="text-muted-foreground leading-relaxed">{dynamicDescription}</p>
               </div>
-            ))}
+            );
+          })}
           </div>
         </div>
       </section>
@@ -205,23 +212,29 @@ const About = () => {
         </div>
         
         <div className="grid md:grid-cols-3 gap-8 lg:gap-12">
-          {teamMembers.map((member, index) => (
-            <div 
-              key={member.name} 
-              className="bg-card rounded-2xl shadow-lg p-8 text-center hover:shadow-xl border border-border/50 transition-all duration-300 hover:-translate-y-2 group"
-            >
-              <div className="relative w-32 h-32 rounded-full mx-auto mb-6 overflow-hidden border-4 border-primary shadow-lg group-hover:scale-105 transition-transform duration-300">
-                <img  
-                  src="https://images.unsplash.com/photo-1544212408-c711b7c19b92" 
-                  alt={member.name} 
-                  className="object-cover w-full h-full"
-                  loading="lazy" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-              </div>
-              
-              <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2">{member.name}</h3>
-              <p className="text-primary font-semibold mb-4 text-lg">{member.role}</p>
-              <p className="text-muted-foreground leading-relaxed mb-6">{member.bio}</p>
+          {teamMembers.map((member, index) => {
+            // Get dynamic content for this team member
+            const dynamicName = getContent('about', 'team', `member${index + 1}Name`) || member.name;
+            const dynamicRole = getContent('about', 'team', `member${index + 1}Role`) || member.role;
+            const dynamicBio = getContent('about', 'team', `member${index + 1}Bio`) || member.bio;
+            
+            return (
+              <div 
+                key={dynamicName} 
+                className="bg-card rounded-2xl shadow-lg p-8 text-center hover:shadow-xl border border-border/50 transition-all duration-300 hover:-translate-y-2 group"
+              >
+                <div className="relative w-32 h-32 rounded-full mx-auto mb-6 overflow-hidden border-4 border-primary shadow-lg group-hover:scale-105 transition-transform duration-300">
+                  <img  
+                    src="https://images.unsplash.com/photo-1544212408-c711b7c19b92" 
+                    alt={dynamicName} 
+                    className="object-cover w-full h-full"
+                    loading="lazy" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+                </div>
+                
+                <h3 className="text-xl md:text-2xl font-bold text-foreground mb-2">{dynamicName}</h3>
+                <p className="text-primary font-semibold mb-4 text-lg">{dynamicRole}</p>
+                <p className="text-muted-foreground leading-relaxed mb-6">{dynamicBio}</p>
               
               {/* Contact Options */}
               <div className="flex flex-col gap-3">
@@ -244,7 +257,8 @@ const About = () => {
                 </div>
               </div>
             </div>
-          ))}
+          );
+        })}
         </div>
       </section>
 

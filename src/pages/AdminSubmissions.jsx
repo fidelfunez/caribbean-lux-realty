@@ -78,23 +78,31 @@ const AdminSubmissions = () => {
     try {
       console.log('Admin status:', isAdmin);
       console.log('=== LOADING SUBMISSIONS ===');
+      console.log('About to call getClientSubmissions...');
       const submissionsData = await getClientSubmissions();
-      console.log('Final submissions data:', submissionsData);
+      console.log('getClientSubmissions returned:', submissionsData);
       console.log('Number of submissions:', submissionsData.length);
       console.log('Type of submissionsData:', typeof submissionsData);
       console.log('Is array:', Array.isArray(submissionsData));
       
-      if (submissionsData.length > 0) {
+      if (submissionsData && submissionsData.length > 0) {
         console.log('First submission structure:', submissionsData[0]);
         console.log('First submission keys:', Object.keys(submissionsData[0]));
         console.log('Title field:', submissionsData[0].title);
         console.log('Contact name field:', submissionsData[0].contactName);
+      } else {
+        console.log('No submissions data or empty array');
       }
       
-      setSubmissions(submissionsData);
-      console.log('Submissions state set with:', submissionsData.length, 'items');
+      setSubmissions(submissionsData || []);
+      console.log('Submissions state set with:', (submissionsData || []).length, 'items');
     } catch (error) {
       console.error('Error loading submissions:', error);
+      console.error('Error details:', {
+        message: error.message,
+        stack: error.stack,
+        name: error.name
+      });
       toast({
         title: "Error loading submissions",
         description: "Failed to load submissions from database.",
@@ -356,6 +364,9 @@ const AdminSubmissions = () => {
             <p>Raw name: {submissions[0]?.name || 'No raw name'}</p>
             <p>Raw email: {submissions[0]?.email || 'No raw email'}</p>
             <p>Raw contactemail: {submissions[0]?.contactemail || 'No raw contactemail'}</p>
+            <p>All keys: {Object.keys(submissions[0]).join(', ')}</p>
+            <p>getDisplayValue contactName: {getDisplayValue(submissions[0], 'contactName', 'FAILED')}</p>
+            <p>getDisplayValue contactEmail: {getDisplayValue(submissions[0], 'contactEmail', 'FAILED')}</p>
           </div>
         )}
       </div>
@@ -453,15 +464,15 @@ const AdminSubmissions = () => {
                       <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
                         <span className="flex items-center gap-1">
                           <Mail className="h-4 w-4 text-primary" />
-                          {getDisplayValue(submission, 'contactEmail', getDisplayValue(submission, 'contactemail', getDisplayValue(submission, 'email', 'Email not provided')))}
+                          {getDisplayValue(submission, 'contactEmail', 'Email not provided')}
                         </span>
                         <span className="flex items-center gap-1">
                           <Phone className="h-4 w-4 text-primary" />
-                          {getDisplayValue(submission, 'contactPhone', getDisplayValue(submission, 'contactphone', getDisplayValue(submission, 'phone', 'Phone not provided')))}
+                          {getDisplayValue(submission, 'contactPhone', 'Phone not provided')}
                         </span>
                         <span className="flex items-center gap-1">
                           <Users className="h-4 w-4 text-primary" />
-                          {getDisplayValue(submission, 'contactName', getDisplayValue(submission, 'contactname', getDisplayValue(submission, 'name', 'Contact name not provided')))}
+                          {getDisplayValue(submission, 'contactName', 'Contact name not provided')}
                         </span>
                       </div>
 
@@ -598,9 +609,9 @@ const AdminSubmissions = () => {
                     <div>
                       <h3 className="font-semibold text-lg mb-2">Contact Information</h3>
                       <div className="space-y-2 text-sm">
-                        <p><strong>Name:</strong> {getDisplayValue(selectedSubmission, 'contactName', getDisplayValue(selectedSubmission, 'name', 'Not provided'))}</p>
-                        <p><strong>Email:</strong> {getDisplayValue(selectedSubmission, 'contactEmail', getDisplayValue(selectedSubmission, 'email', 'Not provided'))}</p>
-                        <p><strong>Phone:</strong> {getDisplayValue(selectedSubmission, 'contactPhone', getDisplayValue(selectedSubmission, 'phone', 'Not provided'))}</p>
+                        <p><strong>Name:</strong> {getDisplayValue(selectedSubmission, 'contactName', 'Not provided')}</p>
+                        <p><strong>Email:</strong> {getDisplayValue(selectedSubmission, 'contactEmail', 'Not provided')}</p>
+                        <p><strong>Phone:</strong> {getDisplayValue(selectedSubmission, 'contactPhone', 'Not provided')}</p>
                       </div>
                     </div>
                   </div>

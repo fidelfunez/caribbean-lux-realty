@@ -175,16 +175,16 @@ const Properties = () => {
   return (
     <div className="space-y-12">
       {/* Enhanced Hero Section - Desktop Full Width */}
-      <section className="text-center py-16 md:py-20 lg:py-24 relative overflow-hidden rounded-xl">
-        {/* Background Image */}
+      <section className="hero-full-bleed text-center py-16 md:py-20 lg:py-24 relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-400 via-blue-500 to-teal-600" style={{ background: 'linear-gradient(to bottom right, #60a5fa, #3b82f6, #0d9488)' }}>
+        {/* Background Image with Color-Matched Placeholder */}
         <div className="absolute inset-0">
-          <img 
+          {/* <img 
             src="/Photos/beach-optimized.jpg" 
             alt="Caribbean beach" 
             className="w-full h-full object-cover"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/50"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-blue-900/40 via-blue-800/30 to-blue-700/20"></div> */}
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="mb-6">
@@ -208,10 +208,10 @@ const Properties = () => {
               { number: allProperties.filter(p => p.type === "Beachfront").length.toString(), label: "Beachfront", icon: <MapPin className="w-6 h-6 text-primary" /> },
               { number: allProperties.filter(p => p.type === "Land").length.toString(), label: "Land Plots", icon: <TrendingUp className="w-6 h-6 text-primary" /> }
             ].map((stat, index) => (
-              <div key={index} className="text-center p-4 bg-card rounded-xl shadow-md border border-border/50">
+              <div key={index} className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl shadow-md border border-white/20">
                 <div className="flex justify-center mb-2">{stat.icon}</div>
-                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary">{stat.number}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
+                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white">{stat.number}</div>
+                <div className="text-sm text-white/80">{stat.label}</div>
               </div>
             ))}
           </div>
@@ -341,7 +341,7 @@ const Properties = () => {
               <div className="flex items-center gap-4">
                 <p className="text-muted-foreground text-lg">
                   Showing <span className="font-semibold text-primary">{filteredProperties.length}</span> of <span className="font-semibold">{allProperties.length}</span> properties
-                </p>
+              </p>
                 {sortBy !== 'featured' && (
                   <div className="flex items-center gap-1 text-sm text-muted-foreground">
                     {sortBy === 'price-low' ? <SortAsc className="w-4 h-4" /> : <SortDesc className="w-4 h-4" />}
@@ -356,7 +356,7 @@ const Properties = () => {
             </div>
           </div>
         )}
-
+        
         {/* Loading State */}
         {loading && (
           <div className="text-center py-16">
@@ -496,7 +496,7 @@ const Properties = () => {
               </p>
               
               {/* Action buttons based on context */}
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 {(searchTerm || propertyType !== 'all' || bedrooms !== 'all' || priceRange[0] > 0 || priceRange[1] < 2000000) ? (
                   <>
                     <Button 
@@ -512,18 +512,18 @@ const Properties = () => {
                       Clear All Filters
                     </Button>
                     <Button asChild variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
-                      <Link to="/contact">
-                        Contact Us
-                      </Link>
-                    </Button>
+                    <Link to="/contact">
+                      Contact Us
+                    </Link>
+                  </Button>
                   </>
                 ) : (
                   <>
                     <Button asChild variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
                       <Link to="/contact">
-                        List Your Property
-                      </Link>
-                    </Button>
+                      List Your Property
+                    </Link>
+                  </Button>
                     <Button asChild variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground">
                       <Link to="/services">
                         Our Services
@@ -531,7 +531,7 @@ const Properties = () => {
                     </Button>
                   </>
                 )}
-              </div>
+                </div>
             </div>
           </div>
         )}
@@ -565,13 +565,13 @@ const Properties = () => {
                 <span>48-hour response time</span>
               </div>
             </div>
-            <div>
+              <div>
               <Button asChild size="lg" variant="outline" className="text-lg px-8 py-3 border-2 border-primary text-primary hover:bg-primary hover:text-primary-foreground transition-colors bg-white/80 backdrop-blur-sm font-semibold shadow-lg">
-                <Link to="/submit-property">
-                  Submit Your Property
-                </Link>
-              </Button>
-            </div>
+                  <Link to="/submit-property">
+                    Submit Your Property
+                  </Link>
+                </Button>
+              </div>
           </div>
         </div>
       </section>

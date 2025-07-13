@@ -336,14 +336,32 @@ export const getClientSubmissions = async () => {
     }
 
     console.log('Raw data before conversion:', data);
+    console.log('Raw data length:', data ? data.length : 0);
+    
+    if (data && data.length > 0) {
+      console.log('First raw submission:', data[0]);
+      console.log('First raw submission keys:', Object.keys(data[0]));
+    }
     
     // Convert database format to frontend format
+    console.log('About to call dbArrayToFrontend...');
     const convertedData = dbArrayToFrontend(data || [], 'client_submissions');
     console.log('Converted data:', convertedData);
+    console.log('Converted data length:', convertedData ? convertedData.length : 0);
+    
+    if (convertedData && convertedData.length > 0) {
+      console.log('First converted submission:', convertedData[0]);
+      console.log('First converted submission keys:', Object.keys(convertedData[0]));
+    }
     
     return convertedData;
   } catch (error) {
     console.error('Error in getClientSubmissions:', error);
+    console.error('Error details:', {
+      message: error.message,
+      stack: error.stack,
+      name: error.name
+    });
     return [];
   }
 };

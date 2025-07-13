@@ -76,16 +76,16 @@ const Contact = () => {
   return (
     <div className="space-y-16 md:space-y-24">
       {/* Enhanced Hero Section */}
-      <section className="text-center py-16 md:py-20 lg:py-24 relative overflow-hidden rounded-xl">
-        {/* Background Image */}
+      <section className="hero-full-bleed text-center py-16 md:py-20 lg:py-24 relative overflow-hidden rounded-xl bg-gradient-to-br from-teal-400 via-cyan-500 to-blue-600" style={{ background: 'linear-gradient(to bottom right, #2dd4bf, #06b6d4, #2563eb)' }}>
+        {/* Background Image with Color-Matched Placeholder */}
         <div className="absolute inset-0">
-          <img 
+          {/* <img 
             src="/Photos/reef-ocean-optimized.jpg" 
             alt="Reef in Caribbean ocean" 
             className="w-full h-full object-cover"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/50"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-teal-900/40 via-cyan-800/30 to-blue-700/20"></div> */}
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="mb-6">
@@ -107,10 +107,10 @@ const Contact = () => {
               { number: getContent('contact', 'hero', 'stat3Number'), label: getContent('contact', 'hero', 'stat3Label'), icon: <Users className="w-6 h-6 text-primary" /> },
               { number: getContent('contact', 'hero', 'stat4Number'), label: getContent('contact', 'hero', 'stat4Label'), icon: <Award className="w-6 h-6 text-primary" /> }
             ].map((stat, index) => (
-              <div key={index} className="text-center p-4 bg-card rounded-xl shadow-md border border-border/50">
+              <div key={index} className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl shadow-md border border-white/20">
                 <div className="flex justify-center mb-2">{stat.icon}</div>
-                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-primary">{stat.number}</div>
-                <div className="text-sm text-muted-foreground">{stat.label}</div>
+                <div className="text-2xl md:text-3xl lg:text-4xl font-bold text-white">{stat.number}</div>
+                <div className="text-sm text-white/80">{stat.label}</div>
               </div>
             ))}
           </div>

@@ -66,76 +66,76 @@ const Services = () => {
     );
   }
 
-  const servicesList = [
-    {
-      slug: "property-sales-acquisition",
-      icon: <Home className="w-12 h-12 text-primary" />,
+const servicesList = [
+  {
+    slug: "property-sales-acquisition",
+    icon: <Home className="w-12 h-12 text-primary" />,
       title: getContent('property-sales-acquisition', '', 'title') || "Property Sales & Acquisition",
       description: getContent('property-sales-acquisition', '', 'description') || "Expert assistance for buying or selling residential homes, luxury villas, condos, and commercial properties. We guide you through every step, from market analysis to closing.",
-      imageUrl: "/Photos/property-sales-acquisition-header.jpg",
-      features: ["Market Analysis", "Negotiation Support", "Closing Assistance"],
-      badge: "Most Popular",
-      badgeColor: "from-yellow-400 to-orange-500"
-    },
-    {
-      slug: "legal-guidance-due-diligence",
-      icon: <Gavel className="w-12 h-12 text-primary" />,
+    imageUrl: "/Photos/property-sales-acquisition-header.jpg",
+    features: ["Market Analysis", "Negotiation Support", "Closing Assistance"],
+    badge: "Most Popular",
+    badgeColor: "from-yellow-400 to-orange-500"
+  },
+  {
+    slug: "legal-guidance-due-diligence",
+    icon: <Gavel className="w-12 h-12 text-primary" />,
       title: getContent('legal-guidance-due-diligence', '', 'title') || "Legal Guidance & Assistance",
       description: getContent('legal-guidance-due-diligence', '', 'description') || "Navigating Honduran property law can be complex. We connect you with trusted legal professionals for due diligence, title searches, and contract reviews.",
-      imageUrl: "/Photos/legal-assistance-header.jpg",
-      features: ["Title Searches", "Contract Review", "Legal Compliance"],
-      badge: "Essential",
-      badgeColor: "from-blue-400 to-blue-600"
-    },
-    {
-      slug: "relocation-assistance",
-      icon: <Users className="w-12 h-12 text-primary" />,
+    imageUrl: "/Photos/legal-assistance-header.jpg",
+    features: ["Title Searches", "Contract Review", "Legal Compliance"],
+    badge: "Essential",
+    badgeColor: "from-blue-400 to-blue-600"
+  },
+  {
+    slug: "relocation-assistance",
+    icon: <Users className="w-12 h-12 text-primary" />,
       title: getContent('relocation-assistance', '', 'title') || "Relocation Assistance",
       description: getContent('relocation-assistance', '', 'description') || "Moving to Roatán? We offer comprehensive relocation support, including advice on residency, banking, schools, and settling into island life.",
-      imageUrl: "/Photos/relocation-assistance-header.jpg",
-      features: ["Residency Guidance", "School Information", "Local Integration"],
-      badge: "New Service",
-      badgeColor: "from-green-400 to-green-600"
-    },
-    {
-      slug: "land-development-investment",
-      icon: <TrendingUp className="w-12 h-12 text-primary" />,
+    imageUrl: "/Photos/relocation-assistance-header.jpg",
+    features: ["Residency Guidance", "School Information", "Local Integration"],
+    badge: "New Service",
+    badgeColor: "from-green-400 to-green-600"
+  },
+  {
+    slug: "land-development-investment",
+    icon: <TrendingUp className="w-12 h-12 text-primary" />,
       title: getContent('land-development-investment', '', 'title') || "Development & Investment",
       description: getContent('land-development-investment', '', 'description') || "Identifying prime land for development, connecting with architects and builders, and advising on investment strategies for maximum returns.",
-      imageUrl: "/Photos/land-development-header.jpeg",
-      features: ["Site Selection", "Investment Analysis", "Development Planning"],
-      badge: "Premium",
-      badgeColor: "from-purple-400 to-purple-600"
-    },
-    {
-      slug: "vacation-rental-management",
-      icon: <Anchor className="w-12 h-12 text-primary" />,
+    imageUrl: "/Photos/land-development-header.jpeg",
+    features: ["Site Selection", "Investment Analysis", "Development Planning"],
+    badge: "Premium",
+    badgeColor: "from-purple-400 to-purple-600"
+  },
+  {
+    slug: "vacation-rental-management",
+    icon: <Anchor className="w-12 h-12 text-primary" />,
       title: getContent('vacation-rental-management', '', 'title') || "Vacation Rental Management",
       description: getContent('vacation-rental-management', '', 'description') || "Turn your Roatán property into a profitable investment with our professional vacation rental management services, handling bookings, maintenance, and guest services.",
-      imageUrl: "/Photos/vacation-rental-h.jpeg",
-      features: ["Booking Management", "Property Maintenance", "Guest Services"],
-      badge: "High Demand",
-      badgeColor: "from-pink-400 to-pink-600"
-    },
-    {
-      slug: "commercial-real-estate",
-      icon: <Briefcase className="w-12 h-12 text-primary" />,
+    imageUrl: "/Photos/vacation-rental-h.jpeg",
+    features: ["Booking Management", "Property Maintenance", "Guest Services"],
+    badge: "High Demand",
+    badgeColor: "from-pink-400 to-pink-600"
+  },
+  {
+    slug: "commercial-real-estate",
+    icon: <Briefcase className="w-12 h-12 text-primary" />,
       title: getContent('commercial-real-estate', '', 'title') || "Commercial Real Estate",
       description: getContent('commercial-real-estate', '', 'description') || "Specialized services for businesses looking to establish or expand in Roatán, including office spaces, retail locations, and hospitality ventures.",
-      imageUrl: "/Photos/commercial-real-estate-header.jpg",
-      features: ["Business Location", "Market Research", "Investment Strategy"],
-      badge: "Specialized",
-      badgeColor: "from-indigo-400 to-indigo-600"
-    }
-  ];
+    imageUrl: "/Photos/commercial-real-estate-header.jpg",
+    features: ["Business Location", "Market Research", "Investment Strategy"],
+    badge: "Specialized",
+    badgeColor: "from-indigo-400 to-indigo-600"
+  }
+];
 
   return (
     <div className="space-y-16 md:space-y-24">
       {/* Enhanced Hero Section */}
-      <section className="text-center py-16 md:py-20 relative overflow-hidden rounded-xl">
-        {/* Background Image */}
+      <section className="hero-full-bleed text-center py-16 md:py-20 relative overflow-hidden rounded-xl bg-gradient-to-br from-cyan-400 via-blue-500 to-indigo-600" style={{ background: 'linear-gradient(to bottom right, #22d3ee, #3b82f6, #4f46e5)' }}>
+        {/* Background Image with Color-Matched Placeholder */}
         <div className="absolute inset-0">
-          <OptimizedImage 
+          {/* <OptimizedImage 
             src="/Photos/turtle-ocean-optimized.jpg" 
             webpSrc="/Photos/turtle-ocean-optimized.webp"
             alt="Turtle in Caribbean ocean" 
@@ -143,7 +143,7 @@ const Services = () => {
             loading="eager"
             fetchpriority="high"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/50"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-cyan-900/40 via-blue-800/30 to-indigo-700/20"></div> */}
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="mb-6">
@@ -165,9 +165,9 @@ const Services = () => {
               { number: getContent('services', 'hero', 'stat3Number'), label: getContent('services', 'hero', 'stat3Label') },
               { number: getContent('services', 'hero', 'stat4Number'), label: getContent('services', 'hero', 'stat4Label') }
             ].map((stat, index) => (
-              <div key={index} className="text-center">
-                <div className="text-2xl md:text-3xl font-bold text-primary">{stat.number}</div>
-                <div className="text-sm text-white">{stat.label}</div>
+              <div key={index} className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl shadow-md border border-white/20">
+                <div className="text-2xl md:text-3xl font-bold text-white">{stat.number}</div>
+                <div className="text-sm text-white/80">{stat.label}</div>
               </div>
             ))}
           </div>

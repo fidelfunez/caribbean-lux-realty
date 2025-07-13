@@ -19,8 +19,8 @@ const PropertyDetail = () => {
         setLoading(true);
         setError(null);
         const fetchedProperty = await getPropertyById(propertyId);
-        setProperty(fetchedProperty);
-        setCurrentImageIndex(0);
+    setProperty(fetchedProperty);
+    setCurrentImageIndex(0); 
       } catch (err) {
         console.error('Error fetching property:', err);
         setError('Failed to load property details. Please try again later.');
@@ -102,10 +102,10 @@ const PropertyDetail = () => {
       <div className="mb-8">
         <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4">
           <Button variant="outline" asChild className="w-fit">
-            <Link to="/properties" className="text-primary hover:text-primary/80">
-              <ChevronLeft className="mr-2 h-4 w-4" /> Back to All Properties
-            </Link>
-          </Button>
+          <Link to="/properties" className="text-primary hover:text-primary/80">
+            <ChevronLeft className="mr-2 h-4 w-4" /> Back to All Properties
+          </Link>
+        </Button>
           
           {/* Desktop: Action Buttons */}
           <div className="hidden lg:flex items-center gap-3">
@@ -137,13 +137,13 @@ const PropertyDetail = () => {
               <span>Roatán, Honduras</span>
             </div>
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold text-primary leading-tight">
-              {property.title}
-            </h1>
+          {property.title}
+        </h1>
             <div className="flex items-center text-lg lg:text-xl text-muted-foreground">
               <MapPin className="w-5 h-5 mr-2 text-turquoise-dark" /> 
               <span>{property.location}</span>
             </div>
-          </div>
+        </div>
 
           {/* Enhanced Image Gallery */}
           <div className="space-y-4">
@@ -213,32 +213,32 @@ const PropertyDetail = () => {
           <Card className="bg-background/50 p-6 lg:p-8 rounded-xl shadow-md border border-border/50">
             <CardHeader className="p-0 mb-6">
                <CardTitle className="text-2xl lg:text-3xl font-semibold text-primary">Property Overview</CardTitle>
-            </CardHeader>
-            <CardContent className="p-0">
+              </CardHeader>
+              <CardContent className="p-0">
               <p className="text-base sm:text-lg lg:text-xl leading-relaxed text-foreground whitespace-pre-line">
-                {property.description}
-              </p>
-            </CardContent>
-          </Card>
+                  {property.description}
+                </p>
+              </CardContent>
+            </Card>
 
           {/* Enhanced Key Features */}
-          {property.features && property.features.length > 0 && (
+             {property.features && property.features.length > 0 && (
             <Card className="bg-background/50 p-6 lg:p-8 rounded-xl shadow-md border border-border/50">
               <CardHeader className="p-0 mb-6">
                  <CardTitle className="text-2xl lg:text-3xl font-semibold text-primary">Key Features</CardTitle>
-              </CardHeader>
-              <CardContent className="p-0">
+                </CardHeader>
+                <CardContent className="p-0">
                 <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-x-6 gap-y-4 text-foreground">
-                  {property.features.map((feature, index) => (
-                    <li key={index} className="flex items-start">
+                    {property.features.map((feature, index) => (
+                      <li key={index} className="flex items-start">
                       <CheckCircle className="w-5 h-5 mr-3 text-turquoise-dark flex-shrink-0 mt-1" /> 
                       <span className="text-base lg:text-lg">{feature}</span>
-                    </li>
-                  ))}
-                </ul>
-              </CardContent>
-            </Card>
-          )}
+                      </li>
+                    ))}
+                  </ul>
+                </CardContent>
+              </Card>
+            )}
 
           {/* Desktop: Additional Information */}
           <div className="hidden lg:block">
@@ -333,14 +333,14 @@ const PropertyDetail = () => {
                   </div>
                 )}
               </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
           {/* Enhanced Contact Card */}
           <Card className="bg-background/50 p-6 lg:p-8 rounded-xl shadow-md border border-border/50">
             <CardHeader className="p-0 mb-6">
               <CardTitle className="text-xl lg:text-2xl font-semibold text-primary">Contact Information</CardTitle>
-            </CardHeader>
+              </CardHeader>
             <CardContent className="p-0 space-y-4">
               <div className="flex items-center p-3 bg-white/30 rounded-lg">
                 <Mail className="w-5 h-5 mr-3 text-turquoise-dark" />
@@ -349,11 +349,11 @@ const PropertyDetail = () => {
               <div className="flex items-center p-3 bg-white/30 rounded-lg">
                 <Phone className="w-5 h-5 mr-3 text-turquoise-dark" />
                 <span className="text-sm lg:text-base">+504 123-456-7890</span>
-              </div>
+                </div>
               <div className="flex items-center p-3 bg-white/30 rounded-lg">
                 <Clock className="w-5 h-5 mr-3 text-turquoise-dark" />
                 <span className="text-sm lg:text-base">Available 24/7</span>
-              </div>
+                </div>
               <div className="space-y-3 pt-2">
                 <Button className="w-full bg-primary hover:bg-primary/90 text-primary-foreground text-base py-3">
                   <Mail className="w-5 h-5 mr-2" />
@@ -364,22 +364,22 @@ const PropertyDetail = () => {
                   Call Now
                 </Button>
               </div>
-            </CardContent>
-          </Card>
+              </CardContent>
+            </Card>
 
           {/* Enhanced Status Card */}
           <Card className="bg-background/50 p-6 lg:p-8 rounded-xl shadow-md border border-border/50">
             <CardHeader className="p-0 mb-6">
               <CardTitle className="text-xl lg:text-2xl font-semibold text-primary">Property Status</CardTitle>
-            </CardHeader>
+              </CardHeader>
             <CardContent className="p-0 space-y-4">
               <div className="flex items-center justify-between p-3 bg-white/30 rounded-lg">
                 <span className="font-medium">Status:</span>
                 <span className="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200">
                   <CheckCircle className="w-4 h-4 mr-2" />
-                  Available
-                </span>
-              </div>
+                    Available
+                  </span>
+                </div>
               <div className="flex items-center justify-between p-3 bg-white/30 rounded-lg">
                 <span className="font-medium">Listed:</span>
                 <span className="text-sm lg:text-base">
@@ -389,9 +389,9 @@ const PropertyDetail = () => {
               <div className="flex items-center justify-between p-3 bg-white/30 rounded-lg">
                 <span className="font-medium">Views:</span>
                 <span className="text-sm lg:text-base">1,247</span>
-              </div>
-            </CardContent>
-          </Card>
+                </div>
+              </CardContent>
+            </Card>
 
           {/* Mobile: Action Buttons */}
           <div className="lg:hidden flex gap-3">
@@ -404,8 +404,8 @@ const PropertyDetail = () => {
               Save
             </Button>
           </div>
-        </aside>
-      </div>
+          </aside>
+        </div>
 
       {/* Enhanced Lightbox Modal */}
       {isLightboxOpen && (

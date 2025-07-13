@@ -99,9 +99,15 @@ export const FRONTEND_FIELDS = {
 
 // Convert database object to frontend format (snake_case to camelCase)
 export const dbToFrontend = (dbObject, tableType = 'properties') => {
-  if (!dbObject) return null;
+  console.log('dbToFrontend called with:', { dbObject, tableType });
+  
+  if (!dbObject) {
+    console.log('dbObject is null/undefined, returning null');
+    return null;
+  }
   
   const frontendObject = { ...dbObject };
+  console.log('Initial frontendObject:', frontendObject);
   
   // Convert common fields
   if (frontendObject.created_at) {
@@ -128,25 +134,54 @@ export const dbToFrontend = (dbObject, tableType = 'properties') => {
   }
   
   if (tableType === 'client_submissions') {
+    console.log('Converting client_submissions fields...');
+    console.log('Original fields:', {
+      contactname: frontendObject.contactname,
+      name: frontendObject.name,
+      contactemail: frontendObject.contactemail,
+      email: frontendObject.email,
+      contactphone: frontendObject.contactphone,
+      phone: frontendObject.phone
+    });
+    
+    // Handle both old field names (name, email, phone) and new field names (contactname, contactemail, contactphone)
     if (frontendObject.contactname) {
       frontendObject.contactName = frontendObject.contactname;
       delete frontendObject.contactname;
+      console.log('Converted contactname to contactName');
+    } else if (frontendObject.name) {
+      frontendObject.contactName = frontendObject.name;
+      delete frontendObject.name;
+      console.log('Converted name to contactName');
     }
     
     if (frontendObject.contactemail) {
       frontendObject.contactEmail = frontendObject.contactemail;
       delete frontendObject.contactemail;
+      console.log('Converted contactemail to contactEmail');
+    } else if (frontendObject.email) {
+      frontendObject.contactEmail = frontendObject.email;
+      delete frontendObject.email;
+      console.log('Converted email to contactEmail');
     }
     
     if (frontendObject.contactphone) {
       frontendObject.contactPhone = frontendObject.contactphone;
       delete frontendObject.contactphone;
+      console.log('Converted contactphone to contactPhone');
+    } else if (frontendObject.phone) {
+      frontendObject.contactPhone = frontendObject.phone;
+      delete frontendObject.phone;
+      console.log('Converted phone to contactPhone');
     }
     
     if (frontendObject.property_type) {
       frontendObject.propertyType = frontendObject.property_type;
       delete frontendObject.property_type;
+      console.log('Converted property_type to propertyType');
     }
+    
+    console.log('Final frontendObject after conversion:', frontendObject);
   }
   
   if (tableType === 'blog_posts') {
@@ -156,6 +191,7 @@ export const dbToFrontend = (dbObject, tableType = 'properties') => {
     }
   }
   
+  console.log('dbToFrontend returning:', frontendObject);
   return frontendObject;
 };
 
@@ -190,6 +226,7 @@ export const frontendToDb = (frontendObject, tableType = 'properties') => {
   }
   
   if (tableType === 'client_submissions') {
+    // Convert frontend field names to database field names
     if (dbObject.contactName) {
       dbObject.contactname = dbObject.contactName;
       delete dbObject.contactName;
@@ -223,8 +260,24 @@ export const frontendToDb = (frontendObject, tableType = 'properties') => {
 
 // Convert array of database objects to frontend format
 export const dbArrayToFrontend = (dbArray, tableType = 'properties') => {
-  if (!Array.isArray(dbArray)) return [];
-  return dbArray.map(item => dbToFrontend(item, tableType));
+  console.log('dbArrayToFrontend called with:', { dbArray, tableType });
+  console.log('dbArray is array:', Array.isArray(dbArray));
+  console.log('dbArray length:', dbArray ? dbArray.length : 0);
+  
+  if (!Array.isArray(dbArray)) {
+    console.log('dbArray is not an array, returning empty array');
+    return [];
+  }
+  
+  const result = dbArray.map((item, index) => {
+    console.log(`Converting item ${index}:`, item);
+    const converted = dbToFrontend(item, tableType);
+    console.log(`Converted item ${index}:`, converted);
+    return converted;
+  });
+  
+  console.log('dbArrayToFrontend result:', result);
+  return result;
 };
 
 // Convert array of frontend objects to database format
@@ -273,6 +326,31 @@ export const validateAndConvertTypes = (data, tableType = 'properties') => {
 // Get display value for a field (handles null/undefined gracefully)
 export const getDisplayValue = (obj, field, defaultValue = 'N/A') => {
   if (!obj || !field) return defaultValue;
+  
+  // For client submissions, handle multiple field name variations
+  if (field === 'contactName' || field === 'contactname' || field === 'name') {
+    const value = obj.contactName || obj.contactname || obj.name;
+    if (value === null || value === undefined || value === '') {
+      return defaultValue;
+    }
+    return value.toString();
+  }
+  
+  if (field === 'contactEmail' || field === 'contactemail' || field === 'email') {
+    const value = obj.contactEmail || obj.contactemail || obj.email;
+    if (value === null || value === undefined || value === '') {
+      return defaultValue;
+    }
+    return value.toString();
+  }
+  
+  if (field === 'contactPhone' || field === 'contactphone' || field === 'phone') {
+    const value = obj.contactPhone || obj.contactphone || obj.phone;
+    if (value === null || value === undefined || value === '') {
+      return defaultValue;
+    }
+    return value.toString();
+  }
   
   const value = obj[field];
   if (value === null || value === undefined || value === '') {

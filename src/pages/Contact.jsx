@@ -85,7 +85,7 @@ const Contact = () => {
             className="w-full h-full object-cover"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-teal-900/85 via-cyan-800/80 to-blue-700/75"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/40"></div>
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="mb-6">

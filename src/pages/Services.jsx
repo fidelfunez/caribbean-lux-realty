@@ -143,7 +143,7 @@ const servicesList = [
             loading="eager"
             fetchpriority="high"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-cyan-900/40 via-blue-800/30 to-indigo-700/20"></div>
+          <div className="absolute inset-0 bg-gradient-to-b from-cyan-900/70 via-blue-800/60 to-indigo-700/50"></div>
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="mb-6">

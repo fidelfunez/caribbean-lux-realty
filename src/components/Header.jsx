@@ -50,14 +50,14 @@ const Header = () => {
     return value;
   };
 
-  // Navigation links with editable content
+  // Navigation links with static data - content will be loaded dynamically
   const navLinks = [
-    { to: '/', label: getContent('header', 'navigation', 'homeLabel'), icon: <HomeIcon className="w-4 h-4 mr-2" /> },
-    { to: '/properties', label: getContent('header', 'navigation', 'propertiesLabel'), icon: <Building2 className="w-4 h-4 mr-2" /> },
-    { to: '/services', label: getContent('header', 'navigation', 'servicesLabel'), icon: <Briefcase className="w-4 h-4 mr-2" /> },
-    { to: '/about', label: getContent('header', 'navigation', 'aboutLabel'), icon: <Info className="w-4 h-4 mr-2" /> },
-    { to: '/blog', label: getContent('header', 'navigation', 'blogLabel'), icon: <Newspaper className="w-4 h-4 mr-2" /> },
-    { to: '/contact', label: getContent('header', 'navigation', 'contactLabel'), icon: <Mail className="w-4 h-4 mr-2" /> },
+    { to: '/', label: 'Home', icon: <HomeIcon className="w-4 h-4 mr-2" /> },
+    { to: '/properties', label: 'Properties', icon: <Building2 className="w-4 h-4 mr-2" /> },
+    { to: '/services', label: 'Services', icon: <Briefcase className="w-4 h-4 mr-2" /> },
+    { to: '/about', label: 'About Us', icon: <Info className="w-4 h-4 mr-2" /> },
+    { to: '/blog', label: 'Blog', icon: <Newspaper className="w-4 h-4 mr-2" /> },
+    { to: '/contact', label: 'Contact', icon: <Mail className="w-4 h-4 mr-2" /> },
   ];
 
   // Optimized scroll handler with throttling
@@ -181,17 +181,27 @@ const Header = () => {
             <Logo textClassName="text-2xl font-bold" />
             
             <nav className="flex space-x-1">
-              {navLinks.map((link) => (
-                <NavLink
-                  key={link.to}
-                  to={link.to}
-                  className={({ isActive }) => `${linkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}
-                >
-                  {link.icon}
-                  {link.label}
-                  {link.label === 'Properties' && <ChevronDown className="w-3 h-3 ml-1" />}
-                </NavLink>
-              ))}
+              {navLinks.map((link) => {
+                // Get dynamic content for this navigation link
+                const dynamicLabel = getContent('header', 'navigation', link.to === '/' ? 'homeLabel' : 
+                  link.to === '/properties' ? 'propertiesLabel' :
+                  link.to === '/services' ? 'servicesLabel' :
+                  link.to === '/about' ? 'aboutLabel' :
+                  link.to === '/blog' ? 'blogLabel' :
+                  link.to === '/contact' ? 'contactLabel' : 'homeLabel') || link.label;
+                
+                return (
+                  <NavLink
+                    key={link.to}
+                    to={link.to}
+                    className={({ isActive }) => `${linkClasses} ${isActive ? activeLinkClasses : inactiveLinkClasses}`}
+                  >
+                    {link.icon}
+                    {dynamicLabel}
+                    {dynamicLabel === getContent('header', 'navigation', 'propertiesLabel') && <ChevronDown className="w-3 h-3 ml-1" />}
+                  </NavLink>
+                );
+              })}
             </nav>
 
             {/* Search Bar */}

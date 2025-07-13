@@ -79,13 +79,13 @@ const Contact = () => {
       <section className="hero-full-bleed text-center py-16 md:py-20 lg:py-24 relative overflow-hidden rounded-xl bg-gradient-to-br from-teal-400 via-cyan-500 to-blue-600" style={{ background: 'linear-gradient(to bottom right, #2dd4bf, #06b6d4, #2563eb)' }}>
         {/* Background Image with Color-Matched Placeholder */}
         <div className="absolute inset-0">
-          {/* <img 
+          <img 
             src="/Photos/reef-ocean-optimized.jpg" 
             alt="Reef in Caribbean ocean" 
             className="w-full h-full object-cover"
             loading="lazy"
           />
-          <div className="absolute inset-0 bg-gradient-to-b from-teal-900/40 via-cyan-800/30 to-blue-700/20"></div> */}
+          <div className="absolute inset-0 bg-gradient-to-b from-teal-900/40 via-cyan-800/30 to-blue-700/20"></div>
         </div>
         <div className="container mx-auto px-4 relative z-10">
           <div className="mb-6">

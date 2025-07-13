@@ -156,18 +156,24 @@ const Home = () => {
           {/* Desktop: Left - Feature Cards */}
           <div className="hidden lg:grid lg:grid-cols-1 gap-6">
             {[
-              { icon: <HomeIconLucide className="w-8 h-8 text-primary" />, title: getContent('home', 'welcome', 'feature1Title'), description: getContent('home', 'welcome', 'feature1Desc') },
-              { icon: <Users className="w-8 h-8 text-primary" />, title: getContent('home', 'welcome', 'feature2Title'), description: getContent('home', 'welcome', 'feature2Desc') },
-              { icon: <Award className="w-8 h-8 text-primary" />, title: getContent('home', 'welcome', 'feature3Title'), description: getContent('home', 'welcome', 'feature3Desc') },
-            ].map((item, index) => (
-              <div key={item.title} className="flex items-start gap-4 p-4 bg-card rounded-xl shadow-md hover:shadow-lg border border-border/50">
-                <div className="flex-shrink-0">{item.icon}</div>
-                <div>
-                  <h3 className="text-xl font-semibold mb-2 text-foreground">{item.title}</h3>
-                  <p className="text-muted-foreground">{item.description}</p>
+              { icon: <HomeIconLucide className="w-8 h-8 text-primary" />, title: 'Expert Guidance', description: 'Navigating the Caribbean market with local expertise and personalized service.' },
+              { icon: <Users className="w-8 h-8 text-primary" />, title: 'Client Focused', description: 'Your dreams are our priority. We listen, advise, and deliver exceptional results.' },
+              { icon: <Award className="w-8 h-8 text-primary" />, title: 'Prime Locations', description: 'Access to exclusive listings in the Caribbean\'s most sought-after destinations.' },
+            ].map((item, index) => {
+              // Get dynamic content for this feature
+              const dynamicTitle = getContent('home', 'welcome', `feature${index + 1}Title`) || item.title;
+              const dynamicDescription = getContent('home', 'welcome', `feature${index + 1}Desc`) || item.description;
+              
+              return (
+                              <div key={item.title} className="flex items-start gap-4 p-4 bg-card rounded-xl shadow-md hover:shadow-lg border border-border/50">
+                  <div className="flex-shrink-0">{item.icon}</div>
+                  <div>
+                    <h3 className="text-xl font-semibold mb-2 text-foreground">{dynamicTitle}</h3>
+                    <p className="text-muted-foreground">{dynamicDescription}</p>
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
           
           {/* Desktop: Right Image */}
@@ -188,19 +194,25 @@ const Home = () => {
           <div className="lg:hidden">
             <div className="grid md:grid-cols-3 gap-8 text-center">
               {[
-                { icon: <HomeIconLucide className="w-12 h-12 text-primary mx-auto mb-4" />, title: getContent('home', 'welcome', 'feature1Title'), description: getContent('home', 'welcome', 'feature1Desc') },
-                { icon: <Users className="w-12 h-12 text-primary mx-auto mb-4" />, title: getContent('home', 'welcome', 'feature2Title'), description: getContent('home', 'welcome', 'feature2Desc') },
-                { icon: <Award className="w-12 h-12 text-primary mx-auto mb-4" />, title: getContent('home', 'welcome', 'feature3Title'), description: getContent('home', 'welcome', 'feature3Desc') },
-              ].map((item, index) => (
+                { icon: <HomeIconLucide className="w-12 h-12 text-primary mx-auto mb-4" />, title: 'Expert Guidance', description: 'Navigating the Caribbean market with local expertise and personalized service.' },
+                { icon: <Users className="w-12 h-12 text-primary mx-auto mb-4" />, title: 'Client Focused', description: 'Your dreams are our priority. We listen, advise, and deliver exceptional results.' },
+                { icon: <Award className="w-12 h-12 text-primary mx-auto mb-4" />, title: 'Prime Locations', description: 'Access to exclusive listings in the Caribbean\'s most sought-after destinations.' },
+              ].map((item, index) => {
+                // Get dynamic content for this feature
+                const dynamicTitle = getContent('home', 'welcome', `feature${index + 1}Title`) || item.title;
+                const dynamicDescription = getContent('home', 'welcome', `feature${index + 1}Desc`) || item.description;
+                
+                return (
                 <div 
                   key={item.title} 
                   className="p-6 bg-card rounded-xl shadow-md hover:shadow-lg border border-border/50"
                 >
                   {item.icon}
-                  <h3 className="text-xl font-semibold mb-2 text-foreground">{item.title}</h3>
-                  <p className="text-muted-foreground">{item.description}</p>
+                  <h3 className="text-xl font-semibold mb-2 text-foreground">{dynamicTitle}</h3>
+                  <p className="text-muted-foreground">{dynamicDescription}</p>
                 </div>
-              ))}
+              );
+            })}
             </div>
           </div>
         </div>
@@ -400,24 +412,30 @@ const Home = () => {
         <div className="grid md:grid-cols-3 gap-8">
           {[
             {
-              name: getContent('home', 'testimonials', 'testimonial1Name'),
-              location: getContent('home', 'testimonials', 'testimonial1Location'),
-              text: getContent('home', 'testimonials', 'testimonial1Text'),
+              name: 'Sarah & Mike',
+              location: 'Roatán Beach Villa',
+              text: 'Caribbean Lux made our dream of owning a beachfront property a reality. Their attention to detail were exceptional.',
               rating: 5
             },
             {
-              name: getContent('home', 'testimonials', 'testimonial2Name'),
-              location: getContent('home', 'testimonials', 'testimonial2Location'),
-              text: getContent('home', 'testimonials', 'testimonial2Text'),
+              name: 'David Rodriguez',
+              location: 'West Bay Condo',
+              text: 'Professional, responsive, and truly understands the local market. I couldn\'t be happier with my investment property.',
               rating: 5
             },
             {
-              name: getContent('home', 'testimonials', 'testimonial3Name'),
-              location: getContent('home', 'testimonials', 'testimonial3Location'),
-              text: getContent('home', 'testimonials', 'testimonial3Text'),
+              name: 'Emma Thompson',
+              location: 'Sandy Bay Home',
+              text: 'From the first consultation to closing, everything was seamless. They really care about their clients\' success.',
               rating: 5
             }
-          ].map((testimonial, index) => (
+          ].map((testimonial, index) => {
+            // Get dynamic content for this testimonial
+            const dynamicName = getContent('home', 'testimonials', `testimonial${index + 1}Name`) || testimonial.name;
+            const dynamicLocation = getContent('home', 'testimonials', `testimonial${index + 1}Location`) || testimonial.location;
+            const dynamicText = getContent('home', 'testimonials', `testimonial${index + 1}Text`) || testimonial.text;
+            
+            return (
             <div 
               key={index}
               className="bg-card p-6 lg:p-8 rounded-xl shadow-md border border-border/50"
@@ -427,13 +445,14 @@ const Home = () => {
                   <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
                 ))}
               </div>
-              <p className="text-muted-foreground mb-4 italic text-lg">{testimonial.text}</p>
+              <p className="text-muted-foreground mb-4 italic text-lg">{dynamicText}</p>
               <div>
-                <div className="font-semibold text-foreground text-lg">{testimonial.name}</div>
-                <div className="text-sm text-muted-foreground">{testimonial.location}</div>
+                <div className="font-semibold text-foreground text-lg">{dynamicName}</div>
+                <div className="text-sm text-muted-foreground">{dynamicLocation}</div>
               </div>
             </div>
-          ))}
+          );
+        })}
         </div>
       </section>
 

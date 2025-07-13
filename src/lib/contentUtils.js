@@ -2,6 +2,25 @@
 
 const CONTENT_STORAGE_KEY = 'caribbeanLuxRealty_websiteContent';
 
+// Safe content getter that won't cause React errors during component definition
+export const safeGetContent = (page, section, field, fallback = '') => {
+  try {
+    const stored = localStorage.getItem(CONTENT_STORAGE_KEY);
+    if (!stored) return fallback;
+    
+    const content = JSON.parse(stored);
+    const value = content[page]?.[section]?.[field];
+    
+    if (!value || typeof value !== 'string' || value.trim() === '') {
+      return fallback;
+    }
+    
+    return value;
+  } catch (error) {
+    return fallback;
+  }
+};
+
 // Default content structure
 const defaultContent = {
   home: {

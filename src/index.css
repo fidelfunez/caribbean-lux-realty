@@ -75,6 +75,17 @@
     @apply border-border;
   }
   
+  /* Loading states for graceful transitions */
+  #root.loading {
+    opacity: 0;
+    transition: opacity 0.3s ease-in;
+  }
+  
+  #root.loaded {
+    opacity: 1;
+    transition: opacity 0.3s ease-out;
+  }
+  
   /* Performance optimizations */
   html {
     scroll-behavior: smooth;

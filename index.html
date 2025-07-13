@@ -7,14 +7,29 @@
         <link rel="apple-touch-icon" href="/favicon.svg" />
         <link rel="manifest" href="/site.webmanifest" />
         <meta name="generator" content="Caribbean Lux Realty" />
-        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <meta name="description" content="Discover luxury Caribbean properties with Caribbean Lux Realty. Explore exclusive listings for homes, villas, and investment opportunities in Roatán and beyond.">
-        <meta name="keywords" content="Caribbean real estate, luxury properties, Caribbean Lux Realty, Roatán real estate, buy luxury homes Caribbean, investment properties Caribbean">
-        <title>Caribbean Lux Realty | Luxury Properties &amp; Investments</title>
-        
-        <!-- Preload critical hero images -->
-        <link rel="preload" as="image" href="/Photos/hero-banner-optimized.jpg" fetchpriority="high">
-        <link rel="preload" as="image" href="/Photos/turtle-ocean-optimized.jpg" fetchpriority="high">
+            <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Discover luxury Caribbean properties with Caribbean Lux Realty. Explore exclusive listings for homes, villas, and investment opportunities in Roatán and beyond.">
+    <meta name="keywords" content="Caribbean real estate, luxury properties, Caribbean Lux Realty, Roatán real estate, buy luxury homes Caribbean, investment properties Caribbean">
+    <title>Caribbean Lux Realty | Luxury Properties &amp; Investments</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" as="image" href="/Photos/hero-banner-optimized.jpg" fetchpriority="high">
+    <link rel="preload" as="image" href="/Photos/turtle-ocean-optimized.jpg" fetchpriority="high">
+    <link rel="preload" as="image" href="/Photos/beach-optimized.jpg" fetchpriority="high">
+    <link rel="preload" as="image" href="/Photos/reef-ocean-optimized.jpg" fetchpriority="high">
+    
+    <!-- Preload critical CSS -->
+    <link rel="preload" href="/src/index.css" as="style">
+    
+    <!-- Critical CSS for immediate styling -->
+    <style>
+      /* Critical styles for immediate rendering */
+      body { margin: 0; font-family: system-ui, -apple-system, sans-serif; }
+      #root { min-height: 100vh; }
+      .hero-full-bleed { background: linear-gradient(to bottom right, #60a5fa, #3b82f6, #0d9488); }
+      .animate-fade-in { animation: fadeIn 0.3s ease-out; }
+      @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    </style>
       </head>
       <body>
         <div id="root"></div>

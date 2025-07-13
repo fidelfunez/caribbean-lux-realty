@@ -41,6 +41,16 @@ export default defineConfig({
 				'@babel/generator',
 				'@babel/types'
 			]
-		}
-	}
+		},
+		cssCodeSplit: false, // Bundle all CSS into one file
+		minify: 'terser',
+		terserOptions: {
+			compress: {
+				drop_console: true,
+			},
+		},
+	},
+	css: {
+		devSourcemap: false,
+	},
 });

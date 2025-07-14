@@ -453,3 +453,96 @@ export const deleteClientSubmission = async (submissionId) => {
     return false;
   }
 }; 
+
+// Page content functions
+export const getPageContent = async (pageName, sectionName = null) => {
+  try {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn('Supabase not configured, returning empty object');
+      return {};
+    }
+    let query = supabase
+      .from('page_content')
+      .select('*')
+      .eq('page_name', pageName);
+    if (sectionName) {
+      query = query.eq('section_name', sectionName);
+    }
+    const { data, error } = await query;
+    if (error) {
+      console.error('Error fetching page content:', error);
+      return {};
+    }
+    // Convert the flat structure to nested object format
+    const content = {};
+    data.forEach(item => {
+      if (!content[item.section_name]) {
+        content[item.section_name] = {};
+      }
+      content[item.section_name] = item.content;
+    });
+    return content;
+  } catch (error) {
+    console.error('Error in getPageContent:', error);
+    return {};
+  }
+};
+
+export const getAllPageContent = async () => {
+  try {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      console.warn('Supabase not configured, returning empty object');
+      return {};
+    }
+    const { data, error } = await supabase
+      .from('page_content')
+      .select('*')
+      .order('page_name')
+      .order('section_name');
+    if (error) {
+      console.error('Error fetching all page content:', error);
+      return {};
+    }
+    // Convert the flat structure to nested object format
+    const content = {};
+    data.forEach(item => {
+      if (!content[item.page_name]) {
+        content[item.page_name] = {};
+      }
+      if (!content[item.page_name][item.section_name]) {
+        content[item.page_name][item.section_name] = {};
+      }
+      content[item.page_name][item.section_name] = item.content;
+    });
+    return content;
+  } catch (error) {
+    console.error('Error in getAllPageContent:', error);
+    return {};
+  }
+};
+
+export const updatePageContent = async (pageName, sectionName, content) => {
+  try {
+    if (!supabaseUrl || !supabaseAnonKey) {
+      throw new Error('Supabase not configured. Please check your environment variables.');
+    }
+    const { data, error } = await supabaseAdmin
+      .from('page_content')
+      .upsert({
+        page_name: pageName,
+        section_name: sectionName,
+        content: content,
+        updated_at: new Date().toISOString()
+      })
+      .select()
+      .single();
+    if (error) {
+      console.error('Error updating page content:', error);
+      throw error;
+    }
+    return data;
+  } catch (error) {
+    console.error('Error in updatePageContent:', error);
+    throw error;
+  }
+}; 

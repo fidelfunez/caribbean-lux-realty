@@ -4,53 +4,37 @@ import { Button } from '@/components/ui/button';
 import { Link } from 'react-router-dom';
 import { Card, CardContent, CardFooter, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import OptimizedImage from '@/components/OptimizedImage';
-import { getContentField, getWebsiteContent } from '@/lib/contentUtils';
+import { getPageContent } from '@/lib/supabaseUtils';
 
 const Services = () => {
   const [content, setContent] = useState({});
   const [isLoading, setIsLoading] = useState(true);
 
   useEffect(() => {
-    // Load website content
-    const loadContent = () => {
+    const loadContent = async () => {
       try {
-        const websiteContent = getWebsiteContent();
-        setContent(websiteContent);
-        setIsLoading(false);
+        const pageContent = await getPageContent('services');
+        setContent(pageContent);
       } catch (error) {
-        console.error('Error loading content:', error);
+        console.error('Error loading page content:', error);
+        setContent({});
+      } finally {
         setIsLoading(false);
       }
     };
-    
     loadContent();
-    
-    // Listen for content updates
-    const handleContentUpdate = () => {
-      loadContent();
-    };
-    
-    window.addEventListener('websiteContentUpdated', handleContentUpdate);
-    
-    return () => {
-      window.removeEventListener('websiteContentUpdated', handleContentUpdate);
-    };
   }, []);
 
   // Helper function to get content with fallback
-  const getContent = (page, section, field) => {
+  const getContent = (section, field, fallback = '') => {
     try {
-      const value = content[page]?.[section]?.[field];
-      
-      // If the value is empty, null, undefined, or not a string, return the default
-      if (!value || typeof value !== 'string' || value.trim() === '') {
-        return getContentField(page, section, field);
+      const value = content[section]?.[field];
+      if (!value || typeof value !== 'string' || value.trim() === '' || typeof value === 'object') {
+        return fallback;
       }
-      
-      return value;
+      return String(value);
     } catch (error) {
-      console.error('Error getting content:', error);
-      return getContentField(page, section, field);
+      return fallback;
     }
   };
 
@@ -152,11 +136,12 @@ const Services = () => {
               <span>Comprehensive Real Estate Solutions</span>
             </div>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white drop-shadow-lg mb-4">{getContent('services', 'hero', 'title')}</h1>
+          <h1 className="text-4xl sm:text-5xl font-extrabold text-white drop-shadow-lg mb-4">
+            {getContent('hero', 'title', 'Our Services')}
+          </h1>
           <p className="text-lg md:text-xl text-white/95 max-w-3xl mx-auto mb-8 drop-shadow-md">
-            {getContent('services', 'hero', 'subtitle')}
+            {getContent('hero', 'subtitle', "Comprehensive real estate solutions tailored to your needs in Roatán. From buying your dream home to managing investments, we've got you covered.")}
           </p>
-          
           {/* Service Stats */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
             {[
@@ -165,12 +150,10 @@ const Services = () => {
               { number: '100%', label: 'Client Satisfaction' },
               { number: '24/7', label: 'Support Available' }
             ].map((stat, index) => {
-              // Get dynamic content for this stat
-              const dynamicNumber = getContent('services', 'hero', `stat${index + 1}Number`) || stat.number;
-              const dynamicLabel = getContent('services', 'hero', `stat${index + 1}Label`) || stat.label;
-              
+              let dynamicNumber = getContent('hero', `stat${index + 1}Number`, stat.number);
+              let dynamicLabel = getContent('hero', `stat${index + 1}Label`, stat.label);
               return (
-                              <div key={index} className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl shadow-md border border-white/20">
+                <div key={index} className="text-center p-4 bg-white/10 backdrop-blur-sm rounded-xl shadow-md border border-white/20">
                   <div className="text-2xl md:text-3xl font-bold text-white">{dynamicNumber}</div>
                   <div className="text-sm text-white/80">{dynamicLabel}</div>
                 </div>
@@ -184,10 +167,8 @@ const Services = () => {
       <section className="container mx-auto px-4">
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6 lg:gap-8">
           {servicesList.map((service, index) => {
-            // Get dynamic content for this service
-            const dynamicTitle = getContent(service.slug, '', 'title') || service.title;
-            const dynamicDescription = getContent(service.slug, '', 'description') || service.description;
-            
+            let dynamicTitle = getContent(service.slug, 'title', service.title);
+            let dynamicDescription = getContent(service.slug, 'description', service.description);
             return (
               <div 
                 key={service.slug} 
@@ -202,8 +183,6 @@ const Services = () => {
                           className="object-cover w-full h-full"
                           src={service.imageUrl} 
                           loading="lazy" />
-                        
-                        {/* Service Badge - Removed for cleaner look */}
                       </div>
                     </CardHeader>
                     <CardContent className="p-4 sm:p-6 flex-grow">
@@ -212,7 +191,6 @@ const Services = () => {
                         <CardTitle className="text-xl sm:text-2xl font-semibold text-primary line-clamp-2 drop-shadow-sm">{dynamicTitle}</CardTitle>
                       </div>
                       <CardDescription className="text-muted-foreground flex-grow mb-4 line-clamp-3 drop-shadow-sm">{dynamicDescription}</CardDescription>
-                    
                     {/* Service Features */}
                     <div className="space-y-2 mb-4">
                       {service.features.map((feature, idx) => (
@@ -240,12 +218,13 @@ const Services = () => {
       <section className="bg-gradient-to-br from-sandy-light via-turquoise-light/30 to-blue-50 py-16 md:py-20 rounded-2xl shadow-inner">
         <div className="container mx-auto px-4">
           <div className="text-center mb-12">
-            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">{getContent('services', 'whyChooseUs', 'title')}</h2>
+            <h2 className="text-3xl md:text-4xl font-bold text-primary mb-4">
+              {getContent('whyChooseUs', 'title', 'Why Choose Caribbean Lux Realty?')}
+            </h2>
             <p className="text-lg text-muted-foreground max-w-3xl mx-auto">
-              {getContent('services', 'whyChooseUs', 'subtitle')}
+              {getContent('whyChooseUs', 'subtitle', 'We combine local expertise with international standards to deliver exceptional results for our clients.')}
             </p>
           </div>
-          
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-8">
             {[
               {
@@ -269,25 +248,23 @@ const Services = () => {
                 description: 'Round-the-clock assistance for all your real estate needs.'
               }
             ].map((item, index) => {
-              // Get dynamic content for this feature
-              const dynamicTitle = getContent('services', 'whyChooseUs', `feature${index + 1}Title`) || item.title;
-              const dynamicDescription = getContent('services', 'whyChooseUs', `feature${index + 1}Desc`) || item.description;
-              
+              let dynamicTitle = getContent('whyChooseUs', `feature${index + 1}Title`, item.title);
+              let dynamicDescription = getContent('whyChooseUs', `feature${index + 1}Desc`, item.description);
               return (
-              <div 
-                key={index}
-                className="text-center p-6 bg-card rounded-xl shadow-md hover:shadow-lg border border-border/50 transition-all duration-300 hover:-translate-y-1"
-              >
-                <div className="mb-4 flex justify-center">
-                  <div className="p-3 bg-primary/10 rounded-xl">
-                    {item.icon}
+                <div 
+                  key={index}
+                  className="text-center p-6 bg-card rounded-xl shadow-md hover:shadow-lg border border-border/50 transition-all duration-300 hover:-translate-y-1"
+                >
+                  <div className="mb-4 flex justify-center">
+                    <div className="p-3 bg-primary/10 rounded-xl">
+                      {item.icon}
+                    </div>
                   </div>
+                  <h3 className="text-lg font-semibold text-foreground mb-2">{dynamicTitle}</h3>
+                  <p className="text-muted-foreground text-sm">{dynamicDescription}</p>
                 </div>
-                <h3 className="text-lg font-semibold text-foreground mb-2">{dynamicTitle}</h3>
-                <p className="text-muted-foreground text-sm">{dynamicDescription}</p>
-              </div>
-            );
-          })}
+              );
+            })}
           </div>
         </div>
       </section>
@@ -295,9 +272,11 @@ const Services = () => {
       {/* Enhanced CTA Section */}
       <section className="bg-sandy-light py-16 md:py-20 rounded-xl shadow-inner">
         <div className="container mx-auto px-4 text-center">
-          <h2 className="text-3xl font-bold text-primary mb-6">{getContent('services', 'cta', 'title')}</h2>
+          <h2 className="text-3xl font-bold text-primary mb-6">
+            {getContent('cta', 'title', 'Ready to Get Started?')}
+          </h2>
           <p className="text-lg text-muted-foreground mb-8 max-w-2xl mx-auto">
-            {getContent('services', 'cta', 'subtitle')}
+            {getContent('cta', 'subtitle', 'Contact us today to discuss your real estate needs and discover how we can help you achieve your goals in Roatán.')}
           </p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center">
             <Button size="lg" asChild variant="outline" className="border-primary text-primary hover:bg-primary hover:text-primary-foreground transform hover:scale-105 transition-transform duration-300 bg-white/80 backdrop-blur-sm font-semibold shadow-lg">

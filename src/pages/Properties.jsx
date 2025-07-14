@@ -173,7 +173,7 @@ const Properties = () => {
   };
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-16 md:space-y-24">
       {/* Enhanced Hero Section - Desktop Full Width */}
       <section className="hero-full-bleed text-center py-16 md:py-20 lg:py-24 relative overflow-hidden rounded-xl bg-gradient-to-br from-blue-400 via-blue-500 to-teal-600" style={{ background: 'linear-gradient(to bottom right, #60a5fa, #3b82f6, #0d9488)' }}>
         {/* Background Image with Color-Matched Placeholder */}
@@ -194,7 +194,7 @@ const Properties = () => {
             </div>
           </div>
           <div className="flex flex-col sm:flex-row justify-center items-center gap-4 mb-4">
-            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white drop-shadow-lg">{getContent('properties', 'hero', 'title')}</h1>
+            <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white drop-shadow-lg mb-4">{getContent('properties', 'hero', 'title')}</h1>
           </div>
           <p className="text-lg md:text-xl lg:text-2xl text-white/95 max-w-4xl mx-auto mb-8 drop-shadow-md">
             {getContent('properties', 'hero', 'subtitle')}

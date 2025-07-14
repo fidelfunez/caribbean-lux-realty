@@ -136,14 +136,14 @@ const Services = () => {
               <span>Comprehensive Real Estate Solutions</span>
             </div>
           </div>
-          <h1 className="text-4xl sm:text-5xl font-extrabold text-white drop-shadow-lg mb-4">
+          <h1 className="text-4xl sm:text-5xl lg:text-6xl font-extrabold text-white drop-shadow-lg mb-4">
             {getContent('hero', 'title', 'Our Services')}
           </h1>
-          <p className="text-lg md:text-xl text-white/95 max-w-3xl mx-auto mb-8 drop-shadow-md">
+          <p className="text-lg md:text-xl lg:text-2xl text-white/95 max-w-4xl mx-auto mb-8 drop-shadow-md">
             {getContent('hero', 'subtitle', "Comprehensive real estate solutions tailored to your needs in Roatán. From buying your dream home to managing investments, we've got you covered.")}
           </p>
           {/* Service Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {[
               { number: '500+', label: 'Properties Sold' },
               { number: '15+', label: 'Years Experience' },

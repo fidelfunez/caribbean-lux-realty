@@ -143,7 +143,7 @@ const Blog = () => {
             </p>
             
             {/* Blog Stats */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
               {[
                 { number: "50+", label: "Articles Published", icon: <PenTool className="w-6 h-6 text-white" /> },
                 { number: "10K+", label: "Monthly Readers", icon: <Eye className="w-6 h-6 text-white" /> },
@@ -256,7 +256,7 @@ const Blog = () => {
           </p>
           
           {/* Blog Stats */}
-          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-4xl mx-auto">
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-6 max-w-5xl mx-auto">
             {[
               { number: "50+", label: "Articles Published", icon: <PenTool className="w-6 h-6 text-white" /> },
               { number: "10K+", label: "Monthly Readers", icon: <Eye className="w-6 h-6 text-white" /> },
